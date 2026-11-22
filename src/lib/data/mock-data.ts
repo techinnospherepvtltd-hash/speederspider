@@ -12,9 +12,8 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     description_en: "SpeederSpider delivers bespoke automotive upholstery services tailored to luxury and performance vehicles. From OEM-grade leather seat restoration and Alcantara headliners to custom diamond stitching and dashboard re-trimming, our artisans bring precision craftsmanship to every interior contour.",
     description_ar: "يقدم سبيدر سبايدر خدمات تنجيد سيارات مخصصة لأفخم السيارات الرياضية والفاخرة. من تجديد المقاعد الجلدية بأجود أنواع الجلد الطبيعي وسقف الكانتارا إلى التطريز الماسي وتجديد لوحة القيادة بحرفية ودقة متناهية.",
     icon_name: "Sparkles",
-    featured_image: "https://images.unsplash.com/photo-1540829099868-e74c830a4b89?auto=format&fit=crop&w=1200&q=80",
+    featured_image: "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80",
     gallery_images: [
-      "https://images.unsplash.com/photo-1540829099868-e74c830a4b89?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80"
     ],
     seo_title_en: "Luxury Car Upholstery & Leather Restoration Dubai | SpeederSpider",
@@ -86,9 +85,9 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     description_en: "From complex CAN-bus communication faults and battery parasitic draw analysis to electronic steering lock (ESL) and radar sensor calibrations, our diagnostic technicians employ specialized diagnostic computers to identify and resolve electrical issues accurately.",
     description_ar: "من أعطال شبكات الاتصال المعقدة بالسيارة وتفريغ البطارية إلى صيانة كمبيوترات المحرك وبرمجة الحساسات والردارات، يستخدم فنيونا أجهزة فحص متطورة لحل أدق المشكلات الكهربائية والإلكترونية.",
     icon_name: "Zap",
-    featured_image: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1200&q=80",
+    featured_image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=1200&q=80",
     gallery_images: [
-      "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=800&q=80"
     ],
     seo_title_en: "Car Electrical Repair & Computer Diagnostics Dubai | SpeederSpider",
     seo_title_ar: "تصليح كهرباء وفحص كمبيوتر سيارات دبي | سبيدر سبايدر",
@@ -208,7 +207,7 @@ export const INITIAL_PROJECTS: PortfolioProject[] = [
     vehicle_make: "Mercedes-AMG",
     vehicle_model: "G63",
     vehicle_year: "2022",
-    before_image: "https://images.unsplash.com/photo-1540829099868-e74c830a4b89?auto=format&fit=crop&w=1200&q=80",
+    before_image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
     after_image: "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80",
     gallery_images: [
       "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80"
