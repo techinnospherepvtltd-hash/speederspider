@@ -12,66 +12,97 @@
 
 ### [Stage 1 & 2] — Repository Audit, Architecture Blueprint & Initial Documentation
 * **Timestamp:** 2026-11-22T16:58:00+05:30
-* **Engineer / Architect:** Senior Full-Stack Software Architect, Security Engineer & SEO Specialist
+* **Status:** Complete
+* **Summary:** Initialized empty repository on `main`, configured remote origin, established comprehensive architecture documentation suite (Architecture, Database Schema, SEO, Security, Deployment, Features Manual), created `.env.example` and `.gitignore`, and committed initial migration script.
 
-#### 1. Repository Audit Findings
-* **Local Project Directory:** `M:\For Other\fehed\Clients\N11_SpeederSpider`
-* **Local Directory State:** Checked with `Get-ChildItem -Force`. The directory was completely empty (no previous files, templates, or legacy code).
-* **Git Status:** Git was not initialized locally.
-* **Remote Status:** Checked remote repository `https://github.com/techinnospherepvtltd-hash/speederspider.git` with `git ls-remote`. The remote repository exists and is completely empty (no branches, no commits).
-* **Environment:** 
-  * Node.js: `v25.2.1`
-  * npm: `11.6.2`
-  * Git: `2.51.0.windows.2`
-  * Operating System: Windows (PowerShell environment)
-* **Action Taken:** Initialized Git locally on branch `main` (`git init -b main`) and configured remote origin (`git remote add origin https://github.com/techinnospherepvtltd-hash/speederspider.git`). No remote push performed (respecting safety protocol).
+---
 
-#### 2. Architecture & Technology Stack Decision
-* **Framework:** Next.js 15+ (App Router) with React 19 / 18, TypeScript (Strict Mode).
-* **Styling & Design System:** Tailwind CSS v3/v4 configured with the exact brand design tokens:
-  * Deep Navy: `#0B132B`
-  * Navy: `#1C2541`
-  * Steel Blue: `#3A506B`
-  * Cyan: `#5BC0DE` (Primary interactive accent)
-  * Warm Beige: `#F4D6B0`
-  * Amber: `#D97706` (Secondary accent)
-* **Typography:** Premium Latin automotive font (`Rajdhani` / `Outfit` / `Inter`) combined with high-readability Arabic typography (`Cairo` / `Tajawal`).
-* **Icons:** `lucide-react` (clean, modern, consistent vector icons; no emojis).
-* **Internationalization (i18n):** Subpath routing (`/[lang]/...`) supporting English (`/en/`) and Arabic (`/ar/`) with direction-aware layout (`dir="rtl"`, RTL CSS adjustments, direction-aware animations and icons).
-* **Backend & Database:** Supabase PostgreSQL with Row Level Security (RLS), Supabase Auth (email/password with role-based profiles), and `@supabase/ssr` for secure server-side operations.
-* **Animation & Preloader:** Lightweight vehicle-inspired preloader with telemetry animation, Framer Motion for scroll reveals, respecting `prefers-reduced-motion`.
-* **Interactive Media:** High-performance, touch/keyboard accessible Before-and-After comparison slider component.
-* **Integrations:** Resend for transactional contact notification emails, WhatsApp click-to-chat with language-aware prefilled messaging (`0565694440`), Google Drive media workflow handler.
+### [Stage 3 & 4] — Design System, Public Bilingual Website & Supabase Backend Layer
+* **Timestamp:** 2026-11-22T17:08:00+05:30
+* **Status:** Complete
+* **Features Implemented:**
+  1. **Next.js & Design Tokens:** Setup with TypeScript strict mode, Tailwind CSS configuring exact brand palette:
+     * Deep Navy (`#0B132B`)
+     * Navy (`#1C2541`)
+     * Steel Blue (`#3A506B`)
+     * Cyan (`#5BC0DE`)
+     * Warm Beige (`#F4D6B0`)
+     * Amber (`#D97706`)
+  2. **Automotive Preloader (`AutomotivePreloader.tsx`):**
+     * Simulated vehicle RPM / telemetry HUD gauge with speed bar.
+     * Brand treatment with cyan accent and Arabic/English system status.
+     * Automatic timeout fallback ensuring users are never trapped; respects `prefers-reduced-motion`.
+  3. **Interactive Before-and-After Slider (`BeforeAfterSlider.tsx`):**
+     * 50/50 split with vertical cyan divider and draggable handle.
+     * Multi-input support: mouse dragging, touch swipe (with vertical scroll-lock prevention), and keyboard arrows.
+     * CLS prevention and responsive aspect ratios.
+  4. **Bilingual Subpath Routing (`/[lang]/...`):**
+     * Dedicated crawlable URLs for English (`/en/...`) and Arabic (`/ar/...`).
+     * Right-to-Left (RTL) layout switching with Arabic typography (`Cairo`/`Tajawal`).
+     * Complete centralized translation dictionary (`src/lib/i18n/translations.ts`).
+  5. **Core Public Pages:**
+     * **Homepage:** Hero with telemetry stats, 7 service cards, interactive Before/After showcase, completed projects, why choose us pillars, authentic reviews, Dubai workshop GPS map, and consultation CTAs.
+     * **About Us:** Brand philosophy, Dubai facility photos, engineering values.
+     * **Services Overview & 7 Detail Pages:** Dedicated pages for Upholstery, Detailing & Polishing, Window Tinting, Electrical, Mechanical, Multimedia, Denting & Painting with Service JSON-LD schema.
+     * **Our Work & Project Details:** Before & After comparisons for Porsche 911 GT3, Mercedes-AMG G63, Nissan Patrol Y62.
+     * **Contact Us:** Interactive form with anti-spam honeypot, WhatsApp direct integration (`0565694440`), Dubai GPS map embed (`25.140657502467402, 55.24151547185268`).
+     * **Draft Legal Pages:** Privacy Policy and Terms of Service clearly marked for management review.
+     * **Custom 404:** Automotive "Track Off Course" page with bilingual return links.
+  6. **Supabase Client & Data Layer:**
+     * `@supabase/ssr` server and browser client abstractions.
+     * Dual data repository (`src/lib/data/db.ts`): queries Supabase when connected, with high-fidelity in-memory runtime fallback ensuring seamless operation.
 
-#### 3. Database Schema Blueprint
-* Fully normalized schema designed across 12 relational tables:
-  1. `profiles`
-  2. `roles` & `permissions`
-  3. `services` (Bilingual: EN & AR)
-  4. `portfolio_projects` (Bilingual: EN & AR)
-  5. `portfolio_images`
-  6. `testimonials` (Bilingual: EN & AR)
-  7. `inventory_categories`
-  8. `inventory_items`
-  9. `inventory_transactions` (Atomic stock audit trail)
-  10. `contact_messages`
-  11. `site_settings`
-  12. `audit_logs`
-* Implemented via SQL migrations in `supabase/migrations/`.
+---
 
-#### 4. Files Created
-* `docs/PROJECT_DEVELOPMENT_TRAIL.md` — Chronological technical progress log.
-* `docs/FEATURES_AND_USER_GUIDE.md` — Business and operational user manual.
-* `docs/ARCHITECTURE.md` — System architecture and technical blueprint.
-* `docs/DATABASE_SCHEMA.md` — Full database schema, relationships, indexes, and RLS policies.
-* `docs/SEO_IMPLEMENTATION.md` — Technical, bilingual, and Dubai local SEO specification.
-* `docs/SECURITY.md` — Security architecture, authorization matrix, and input validation protocol.
-* `docs/API_REFERENCE.md` — Server actions and API routes specification.
-* `docs/DEPLOYMENT.md` — Environment configuration, deployment guidelines, and rollback procedures.
+### [Stage 5 & 6] — Multi-Role Admin Dashboard & Integrations
+* **Timestamp:** 2026-11-22T17:13:00+05:30
+* **Status:** Complete
+* **Features Implemented:**
+  1. **Admin Portal Shell (`/admin`):**
+     * Role-based simulated authentication (`OWNER`, `MANAGER`, `STAFF`).
+     * Sidebar navigation reflecting permitted permissions per role.
+  2. **Dashboard Overview (`/admin/page.tsx`):**
+     * Real-time metrics: Total services, published portfolio projects, customer enquiry count, and low-stock warnings.
+     * Critical Low-Stock Alert Banner and preview list.
+  3. **Service Management (`/admin/services`):**
+     * Full listing of all 7 services.
+     * In-line publish/draft toggles.
+     * Bilingual editor modal (English & Arabic titles, descriptions, featured images).
+  4. **Portfolio Management (`/admin/portfolio`):**
+     * Project creation and editing with Before & After URLs.
+     * Homepage Featured toggle and publish state control.
+  5. **Internal Workshop Inventory (`/admin/inventory`):**
+     * Internal stock control (no public catalogue).
+     * Filter by category and low-stock threshold alert (`quantity <= min_threshold`).
+     * Stock-In (+) modal with supplier notes.
+     * Stock-Out (-) modal with vehicle job tracking and insufficient-stock prevention.
+     * Manual Adjustment modal with mandatory audit reason logging.
+     * Live transaction history audit trail.
+  6. **Contact Enquiries Management (`/admin/enquiries`):**
+     * Inbox triage with status workflow (`New`, `In Progress`, `Contacted`, `Completed`, `Archived`).
+     * Internal notes logger for vehicle VIN, quote amounts, and scheduled dates.
+  7. **Audit Logs (`/admin/audit-logs`):**
+     * Accessible exclusively to the `OWNER` role; enforces role-restricted security.
+  8. **Integrations:**
+     * Public Contact API (`POST /api/contact`) with Zod validation, honeypot anti-spam, and rate-limiting.
+     * Resend transactional email notification trigger with secure server-only API keys.
+     * Google Drive media bridge (`src/lib/media/drive.ts`).
+     * Direct WhatsApp click-to-chat with language-specific prefilled messages.
 
-#### 5. Open Information & Credential Requirements Identified
-* Supabase project URL (`NEXT_PUBLIC_SUPABASE_URL`) & Anon Key (`NEXT_PUBLIC_SUPABASE_ANON_KEY`).
-* Supabase Service Role Key (`SUPABASE_SERVICE_ROLE_KEY`) for secure administrative backend operations.
-* Resend API Key (`RESEND_API_KEY`) and notification recipient business email.
-* Confirmed physical street/building address in Dubai (Coordinates: `25.140657502467402, 55.24151547185268`).
-* Initial Owner administrator account email for system bootstrap.
+---
+
+### [Stage 7 & 8] — SEO, Security Hardening & Quality Assurance
+* **Timestamp:** 2026-11-22T17:15:00+05:30
+* **Status:** Complete
+* **Features Implemented & Tested:**
+  1. **Technical SEO:**
+     * Dynamic `sitemap.xml` generated at `/sitemap.ts` covering all static and dynamic English and Arabic routes while excluding `/admin/*` and `/api/*`.
+     * Dynamic `robots.txt` generated at `/robots.ts`.
+     * Bidirectional `hreflang` alternates with `x-default` and localized canonical URLs.
+     * Schema.org JSON-LD structured data: `AutoRepair` / `LocalBusiness`, `Service`, and `BreadcrumbList`.
+  2. **Security Hardening:**
+     * HTTP Security Headers in `next.config.ts` (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, strict `Permissions-Policy`).
+     * Row Level Security (RLS) PostgreSQL policies covering all 11 database tables in `supabase/migrations/20261122000000_initial_schema.sql`.
+  3. **Quality Verification:**
+     * `npm run type-check`: Passed with 0 TypeScript errors.
+     * `npm run build`: Production bundle optimized and compiled successfully.
