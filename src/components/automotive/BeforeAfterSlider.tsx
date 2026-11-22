@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { parseGoogleDriveUrl } from '@/lib/media/drive';
-import { Sliders } from 'lucide-react';
+import { ChevronsLeftRight } from 'lucide-react';
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -26,7 +26,8 @@ export function BeforeAfterSlider({
   aspectRatio = '16/9',
   className = '',
 }: BeforeAfterSliderProps) {
-  const [sliderPosition, setSliderPosition] = useState(50); // percentage 0-100
+  // 50% comparison split immediately on initial mount
+  const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +38,7 @@ export function BeforeAfterSlider({
     (clientX: number) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
+      if (rect.width <= 0) return;
       const x = clientX - rect.left;
       let pos = (x / rect.width) * 100;
       if (pos < 0) pos = 0;
@@ -49,8 +51,9 @@ export function BeforeAfterSlider({
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
       if (!isDragging) return;
-      e.preventDefault(); // Prevent accidental vertical page scroll while dragging
-      handleMove(e.touches[0].clientX);
+      if (e.touches.length > 0) {
+        handleMove(e.touches[0].clientX);
+      }
     },
     [isDragging, handleMove]
   );
@@ -71,14 +74,16 @@ export function BeforeAfterSlider({
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleInteractionEnd);
-      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchmove', handleTouchMove, { passive: true });
       window.addEventListener('touchend', handleInteractionEnd);
+      window.addEventListener('touchcancel', handleInteractionEnd);
     }
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleInteractionEnd);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleInteractionEnd);
+      window.removeEventListener('touchcancel', handleInteractionEnd);
     };
   }, [isDragging, handleMouseMove, handleTouchMove, handleInteractionEnd]);
 
@@ -88,6 +93,18 @@ export function BeforeAfterSlider({
       setSliderPosition((prev) => Math.max(0, prev - 5));
     } else if (e.key === 'ArrowRight') {
       setSliderPosition((prev) => Math.min(100, prev + 5));
+    }
+  };
+
+  const handleContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    handleMove(e.clientX);
+  };
+
+  const handleContainerTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    if (e.touches.length > 0) {
+      handleMove(e.touches[0].clientX);
     }
   };
 
@@ -105,10 +122,13 @@ export function BeforeAfterSlider({
       aria-label="Interactive before and after comparison slider"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={`relative w-full overflow-hidden select-none rounded-xl border border-brand-steelBlue/40 bg-brand-navy shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-cyan ${aspectClass} ${className}`}
+      onMouseDown={handleContainerMouseDown}
+      onTouchStart={handleContainerTouchStart}
+      style={{ touchAction: 'pan-y' }}
+      className={`relative w-full overflow-hidden select-none rounded-xl border border-brand-steelBlue/40 bg-brand-navy shadow-2xl focus:outline-none focus:ring-2 focus:ring-brand-cyan cursor-ew-resize ${aspectClass} ${className}`}
     >
       {/* 1. AFTER Image (Base Layer - visible on right side) */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full pointer-events-none">
         <Image
           src={cleanAfter}
           alt={afterAlt}
@@ -117,30 +137,38 @@ export function BeforeAfterSlider({
           className="object-cover object-center pointer-events-none"
           priority
         />
-        {/* AFTER Label Badge */}
-        <div className="absolute bottom-4 right-4 z-10 px-3 py-1 text-xs font-semibold tracking-wider uppercase text-white bg-brand-deepNavy/80 backdrop-blur-sm border border-brand-steelBlue/50 rounded-md shadow-md pointer-events-none">
-          {afterLabel}
-        </div>
       </div>
 
-      {/* 2. BEFORE Image (Clipped Overlay - visible on left side) */}
+      {/* 2. BEFORE Image (Clipped Overlay - visible on left side via CSS clip-path from the first frame) */}
       <div
-        className="absolute inset-0 w-full h-full overflow-hidden"
-        style={{ width: `${sliderPosition}%` }}
+        className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
+        style={{
+          clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`,
+          WebkitClipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`,
+        }}
       >
-        <div className="relative w-full h-full" style={{ width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '100%' }}>
-          <Image
-            src={cleanBefore}
-            alt={beforeAlt}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 1000px"
-            className="object-cover object-center pointer-events-none"
-          />
-        </div>
-        {/* BEFORE Label Badge */}
-        <div className="absolute bottom-4 left-4 z-10 px-3 py-1 text-xs font-semibold tracking-wider uppercase text-white bg-brand-deepNavy/80 backdrop-blur-sm border border-brand-steelBlue/50 rounded-md shadow-md pointer-events-none">
-          {beforeLabel}
-        </div>
+        <Image
+          src={cleanBefore}
+          alt={beforeAlt}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 1000px"
+          className="object-cover object-center pointer-events-none"
+          priority
+        />
+      </div>
+
+      {/* BEFORE & AFTER Label Badges */}
+      <div
+        className="absolute bottom-4 left-4 z-20 px-3 py-1 text-xs font-semibold tracking-wider uppercase text-white bg-brand-deepNavy/80 backdrop-blur-sm border border-brand-steelBlue/50 rounded-md shadow-md pointer-events-none transition-opacity duration-150"
+        style={{ opacity: sliderPosition < 8 ? 0 : 1 }}
+      >
+        {beforeLabel}
+      </div>
+      <div
+        className="absolute bottom-4 right-4 z-20 px-3 py-1 text-xs font-semibold tracking-wider uppercase text-white bg-brand-deepNavy/80 backdrop-blur-sm border border-brand-steelBlue/50 rounded-md shadow-md pointer-events-none transition-opacity duration-150"
+        style={{ opacity: sliderPosition > 92 ? 0 : 1 }}
+      >
+        {afterLabel}
       </div>
 
       {/* 3. Vertical Divider Line */}
@@ -156,12 +184,10 @@ export function BeforeAfterSlider({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label="Comparison slider handle"
-        onMouseDown={() => setIsDragging(true)}
-        onTouchStart={() => setIsDragging(true)}
         className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-brand-deepNavy border-2 border-brand-cyan text-brand-cyan shadow-[0_0_20px_rgba(91,192,222,0.6)] cursor-ew-resize hover:scale-110 active:scale-95 transition-transform"
         style={{ left: `${sliderPosition}%` }}
       >
-        <Sliders className="w-5 h-5 pointer-events-none rotate-90" />
+        <ChevronsLeftRight className="w-5 h-5 pointer-events-none" />
       </div>
     </div>
   );
