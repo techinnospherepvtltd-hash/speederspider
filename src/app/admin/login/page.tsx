@@ -3,29 +3,54 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, Mail, UserCheck } from 'lucide-react';
+import { Shield, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import { UserRole } from '@/types';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('owner@speederspider.com');
-  const [password, setPassword] = useState('••••••••••••');
-  const [role, setRole] = useState<UserRole>('owner');
+  const [password, setPassword] = useState('Speeder@1234');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // Save active admin session to document cookie and localStorage for demo/testing
-    document.cookie = `admin_role=${role}; path=/; max-age=86400`;
-    localStorage.setItem('admin_role', role);
-    localStorage.setItem('admin_email', email);
+    try {
+      const supabase = createClient();
+      if (supabase) {
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-    setTimeout(() => {
+        if (signInError) {
+          setError(signInError.message || 'Invalid email or password. Please verify credentials.');
+          setLoading(false);
+          return;
+        }
+
+        const role = (data.user?.user_metadata?.role as UserRole) || 'owner';
+
+        document.cookie = `admin_role=${role}; path=/; max-age=86400`;
+        localStorage.setItem('admin_role', role);
+        localStorage.setItem('admin_email', data.user?.email || email);
+
+        router.push('/admin');
+      } else {
+        // Local preview fallback
+        document.cookie = `admin_role=owner; path=/; max-age=86400`;
+        localStorage.setItem('admin_role', 'owner');
+        localStorage.setItem('admin_email', email);
+        router.push('/admin');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Authentication error occurred.');
       setLoading(false);
-      router.push('/admin');
-    }, 500);
+    }
   };
 
   return (
@@ -47,6 +72,13 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
+        {error && (
+          <div className="p-3 bg-red-950/60 border border-red-500/50 rounded-lg flex items-start gap-2.5 text-xs text-red-200">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 font-mono mb-1.5">
@@ -59,6 +91,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-brand-deepNavy border border-brand-steelBlue/50 rounded-lg text-white text-sm focus:outline-none focus:border-brand-cyan"
+                placeholder="owner@speederspider.com"
               />
               <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
             </div>
@@ -75,55 +108,30 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-brand-deepNavy border border-brand-steelBlue/50 rounded-lg text-white text-sm focus:outline-none focus:border-brand-cyan"
+                placeholder="••••••••••••"
               />
               <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
             </div>
           </div>
 
-          {/* Role Selection for testing multi-role authorization */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 font-mono mb-1.5">
-              Simulated Role Authentication
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['owner', 'manager', 'staff'] as UserRole[]).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => {
-                    setRole(r);
-                    setEmail(`${r}@speederspider.com`);
-                  }}
-                  className={`py-2 text-xs font-mono uppercase font-bold rounded-lg border transition-all ${
-                    role === r
-                      ? 'bg-brand-cyan text-brand-deepNavy border-brand-cyan shadow-[0_0_10px_rgba(91,192,222,0.5)]'
-                      : 'bg-brand-deepNavy text-gray-400 border-brand-steelBlue/40 hover:text-white'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
+          <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/30 rounded-lg text-[11px] text-gray-300 space-y-1">
+            <div className="flex items-center gap-1.5 font-semibold text-brand-cyan font-mono uppercase">
+              <CheckCircle2 className="w-3.5 h-3.5 text-brand-cyan" />
+              <span>Full Owner Authorization</span>
             </div>
+            <p className="text-gray-400">
+              Credentials are authenticated live via Supabase Auth with full OWNER authority across all workshop modules.
+            </p>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 py-3 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)]"
+            className="w-full mt-4 py-3 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)] disabled:opacity-50"
           >
-            {loading ? 'Authenticating...' : `Sign In as ${role.toUpperCase()}`}
+            {loading ? 'Authenticating with Supabase...' : 'Sign In as Owner'}
           </button>
         </form>
-
-        <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/30 rounded-lg text-[11px] text-gray-400 space-y-1">
-          <p className="font-semibold text-brand-warmBeige flex items-center gap-1">
-            <UserCheck className="w-3.5 h-3.5" />
-            Role Access Preview:
-          </p>
-          <p>• <strong>OWNER:</strong> Full authority, security logs, user provisioning.</p>
-          <p>• <strong>MANAGER:</strong> Content CRUD, stock management, customer enquiries.</p>
-          <p>• <strong>STAFF:</strong> Stock-in/stock-out, update enquiry notes only.</p>
-        </div>
       </div>
     </div>
   );
