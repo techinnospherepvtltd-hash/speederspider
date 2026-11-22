@@ -3,9 +3,11 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getServiceBySlug, getServices } from '@/lib/data/db';
+import { getServiceBySlug } from '@/lib/data/db';
 import { Language } from '@/types';
-import { MessageSquare, ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react';
+import { dictionaries } from '@/lib/i18n/translations';
+import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
+import { MessageSquare, ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Sparkles, SlidersHorizontal } from 'lucide-react';
 
 interface ServiceDetailPageProps {
   params: Promise<{ lang: string; slug: string }>;
@@ -54,6 +56,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   const { lang: paramLang, slug } = await params;
   const lang = (paramLang === 'ar' ? 'ar' : 'en') as Language;
   const isRtl = lang === 'ar';
+  const dict = dictionaries[lang];
   const service = await getServiceBySlug(slug);
 
   if (!service) {
@@ -68,7 +71,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
       : encodeURIComponent(`Hello SpeederSpider! I would like to enquire about your service: ${service.title_en}`);
   const whatsappUrl = `https://wa.me/971565694440?text=${whatsappMessage}`;
 
-  // Structured Data (JSON-LD) for Service
+  // Structured Data (JSON-LD) for Service with official address
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -80,6 +83,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
       telephone: '+971565694440',
       address: {
         '@type': 'PostalAddress',
+        streetAddress: 'Al Asayel St - Al Qouz Ind. Second - Al Quoz',
         addressLocality: 'Dubai',
         addressCountry: 'AE',
       },
@@ -90,8 +94,20 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
     },
   };
 
+  // Dedicated Before and After images for this service
+  const beforeImage = service.before_image || service.featured_image;
+  const afterImage = service.after_image || service.featured_image;
+  const beforeCaption = isRtl
+    ? (service.before_caption_ar || "الحالة قبل بدء العمل الفني")
+    : (service.before_caption_en || "Condition before service execution");
+  const afterCaption = isRtl
+    ? (service.after_caption_ar || "النتيجة النهائية بعد اكتمال الخدمة")
+    : (service.after_caption_en || "Completed transformation result");
+  const beforeAlt = isRtl ? (service.before_alt_ar || service.title_ar) : (service.before_alt_en || service.title_en);
+  const afterAlt = isRtl ? (service.after_alt_ar || service.title_ar) : (service.after_alt_en || service.title_en);
+
   return (
-    <div className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+    <div className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
@@ -116,8 +132,8 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
       {/* Hero Service Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-navy border border-brand-cyan/40 text-brand-cyan text-xs font-mono uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-navy border border-brand-amber/40 text-brand-amber text-xs font-mono uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-brand-amber" />
             <span>{isRtl ? 'تخصص سيارات فاخرة' : 'SPECIALIZED AUTOMOTIVE DISCIPLINE'}</span>
           </div>
 
@@ -142,7 +158,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
 
             <Link
               href={`/${lang}/contact`}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white bg-brand-navy hover:bg-brand-steelBlue/40 border border-brand-steelBlue rounded-lg transition-all"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white bg-brand-navy hover:bg-brand-steelBlue/40 border border-brand-steelBlue hover:border-brand-amber rounded-lg transition-all"
             >
               <span>{isRtl ? 'طلب تسعيرة مفصلة' : 'Request Official Quote'}</span>
             </Link>
@@ -150,21 +166,68 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
         </div>
 
         {/* Featured Image */}
-        <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden border border-brand-steelBlue/40 shadow-2xl">
+        <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden border border-brand-steelBlue/40 shadow-2xl group">
           <Image
             src={service.featured_image}
             alt={isRtl ? service.title_ar : service.title_en}
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover object-center"
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-deepNavy via-transparent to-transparent opacity-60" />
         </div>
       </div>
 
+      {/* DEDICATED BEFORE & AFTER COMPARISON SECTION */}
+      <section className="py-12 px-6 sm:px-10 rounded-3xl bg-gradient-to-b from-brand-navy/90 to-brand-deepNavy border border-brand-steelBlue/40 space-y-8 shadow-2xl">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan text-xs font-mono uppercase tracking-wider">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-brand-cyan" />
+            <span>{dict.services.beforeAfterBadge}</span>
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white uppercase font-display">
+            {dict.services.beforeAfterTitle}: {isRtl ? service.title_ar : service.title_en}
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-400">
+            {dict.services.beforeAfterSubtitle}
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto space-y-4">
+          <BeforeAfterSlider
+            beforeImage={beforeImage}
+            afterImage={afterImage}
+            beforeLabel={dict.beforeAfter.beforeLabel}
+            afterLabel={dict.beforeAfter.afterLabel}
+            beforeAlt={beforeAlt}
+            afterAlt={afterAlt}
+            aspectRatio="16/9"
+          />
+
+          {/* Captions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono p-4 rounded-xl bg-brand-deepNavy/80 border border-brand-steelBlue/30">
+            <div className="space-y-1">
+              <span className="text-brand-amber font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-brand-amber" />
+                {dict.beforeAfter.beforeLabel}:
+              </span>
+              <p className="text-gray-300 leading-relaxed font-sans">{beforeCaption}</p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-brand-cyan font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-brand-cyan" />
+                {dict.beforeAfter.afterLabel}:
+              </span>
+              <p className="text-gray-300 leading-relaxed font-sans">{afterCaption}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Workshop Standards Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-brand-steelBlue/30">
-        <div className="p-6 rounded-xl bg-brand-navy/60 border border-brand-steelBlue/30 flex items-start gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-brand-steelBlue/30">
+        <div className="p-6 rounded-xl bg-brand-navy/60 border border-brand-steelBlue/30 flex items-start gap-4 hover:border-brand-cyan/50 transition-colors">
           <CheckCircle2 className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-bold text-white font-display">
@@ -176,8 +239,8 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
           </div>
         </div>
 
-        <div className="p-6 rounded-xl bg-brand-navy/60 border border-brand-steelBlue/30 flex items-start gap-4">
-          <CheckCircle2 className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
+        <div className="p-6 rounded-xl bg-brand-navy/60 border border-brand-steelBlue/30 flex items-start gap-4 hover:border-brand-amber/50 transition-colors">
+          <CheckCircle2 className="w-5 h-5 text-brand-amber shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-bold text-white font-display">
               {isRtl ? 'اختبارات مناخ الخليج' : 'Dubai Climate Engineered'}
@@ -188,14 +251,14 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
           </div>
         </div>
 
-        <div className="p-6 rounded-xl bg-brand-navy/60 border border-brand-steelBlue/30 flex items-start gap-4">
+        <div className="p-6 rounded-xl bg-brand-navy/60 border border-brand-steelBlue/30 flex items-start gap-4 hover:border-brand-cyan/50 transition-colors">
           <CheckCircle2 className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-bold text-white font-display">
               {isRtl ? 'إشراف فني متخصص' : 'Specialist Workmanship'}
             </h4>
             <p className="text-xs text-gray-400 mt-1">
-              {isRtl ? 'تنفيذ دقيق بأيدي فنيين متمرسين في ورشة دبي.' : 'Executed directly inside our dedicated Dubai workshop facility.'}
+              {isRtl ? 'تنفيذ دقيق بأيدي فنيين متمرسين في ورشة دبي (شارع الأصايل - القوز).' : 'Executed directly inside our dedicated Dubai workshop on Al Asayel St, Al Quoz.'}
             </p>
           </div>
         </div>

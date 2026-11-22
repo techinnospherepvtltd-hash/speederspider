@@ -1,9 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/image';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { Shield, Sparkles, Wrench, CheckCircle, Navigation } from 'lucide-react';
+import { Shield, Sparkles, Wrench, MapPin } from 'lucide-react';
 
 interface AboutPageProps {
   params: Promise<{ lang: string }>;
@@ -15,11 +14,26 @@ export default async function AboutPage({ params }: AboutPageProps) {
   const isRtl = lang === 'ar';
   const dict = dictionaries[lang];
 
+  const officialAddress = isRtl
+    ? "شارع الأصايل - القوز الصناعية الثانية - القوز - دبي"
+    : "Al Asayel St - Al Qouz Ind. Second - Al Quoz - Dubai";
+
   return (
     <div className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-20">
       {/* Editorial Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <span className="text-xs font-mono font-bold tracking-widest uppercase text-brand-cyan">
+        <div className="inline-block relative w-28 sm:w-36 h-auto mx-auto mb-1">
+          <Image
+            src="/images/speederspider-shield-full.webp"
+            alt="SpeederSpider Emblem"
+            width={144}
+            height={103}
+            className="w-full h-auto object-contain drop-shadow-[0_4px_25px_rgba(91,192,222,0.35)]"
+            priority
+          />
+        </div>
+        <span className="text-xs font-mono font-bold tracking-widest uppercase text-brand-amber flex items-center justify-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-amber" />
           {isRtl ? 'عن سبيدر سبايدر' : 'ABOUT SPEEDERSPIDER'}
         </span>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white uppercase font-display">
@@ -36,16 +50,19 @@ export default async function AboutPage({ params }: AboutPageProps) {
       <div className="relative h-[400px] sm:h-[500px] w-full rounded-2xl overflow-hidden border border-brand-steelBlue/40 shadow-2xl">
         <Image
           src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1800&q=85"
-          alt="SpeederSpider Dubai Workshop Bay"
+          alt="SpeederSpider Dubai Workshop Facility in Al Quoz"
           fill
           priority
           className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-deepNavy via-brand-deepNavy/30 to-transparent" />
-        <div className="absolute bottom-6 left-6 right-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-brand-deepNavy/80 backdrop-blur-md border border-brand-steelBlue/50">
-          <div>
-            <p className="text-xs font-mono uppercase text-brand-cyan">DUBAI WORKSHOP FACILITY</p>
-            <p className="text-sm font-bold text-white font-display">Lat: 25.140658° N • Lng: 55.241515° E</p>
+        <div className="absolute bottom-6 left-6 right-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-xl bg-brand-deepNavy/85 backdrop-blur-md border border-brand-steelBlue/50">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-5 h-5 text-brand-amber shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-mono uppercase text-brand-amber font-bold">DUBAI WORKSHOP FACILITY</p>
+              <p className="text-sm font-bold text-white font-display">{officialAddress}</p>
+            </div>
           </div>
           <span className="px-3 py-1 rounded bg-brand-navy border border-brand-steelBlue text-[11px] font-mono text-gray-300">
             {isRtl ? 'بيئة عمل بمعايير هندسية' : 'Climate Controlled bays'}
@@ -55,7 +72,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
       {/* Brand Philosophy & Value Propositions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
+        <div className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4 hover:border-brand-cyan/60 transition-colors">
           <div className="w-12 h-12 rounded-xl bg-brand-deepNavy border border-brand-cyan/40 flex items-center justify-center text-brand-cyan">
             <Sparkles className="w-6 h-6" />
           </div>
@@ -69,8 +86,8 @@ export default async function AboutPage({ params }: AboutPageProps) {
           </p>
         </div>
 
-        <div className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-brand-deepNavy border border-brand-cyan/40 flex items-center justify-center text-brand-cyan">
+        <div className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4 hover:border-brand-amber/60 transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-brand-deepNavy border border-brand-amber/40 flex items-center justify-center text-brand-amber">
             <Shield className="w-6 h-6" />
           </div>
           <h3 className="text-xl font-bold text-white font-display">
@@ -83,7 +100,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
           </p>
         </div>
 
-        <div className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
+        <div className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4 hover:border-brand-cyan/60 transition-colors">
           <div className="w-12 h-12 rounded-xl bg-brand-deepNavy border border-brand-cyan/40 flex items-center justify-center text-brand-cyan">
             <Wrench className="w-6 h-6" />
           </div>

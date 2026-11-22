@@ -18,6 +18,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { formatCurrencyAED } from '@/lib/utils';
+import { AdminSettingsCard } from '@/components/admin/AdminSettingsCard';
 
 export default async function AdminDashboardPage() {
   const services = await getAllServicesAdmin();
@@ -254,6 +255,9 @@ export default async function AdminDashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Google Business Profile & Review URL Settings */}
+      <AdminSettingsCard />
     </div>
   );
 }

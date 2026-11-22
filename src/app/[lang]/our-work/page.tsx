@@ -60,7 +60,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                   {isRtl ? project.title_ar : project.title_en}
                 </h2>
                 <p className="text-xs text-gray-400 mt-2 line-clamp-2 leading-relaxed">
-                  {isRtl ? project.desc_ar : project.desc_en}
+                  {isRtl ? (project.short_desc_ar || project.desc_ar) : (project.short_desc_en || project.desc_en)}
                 </p>
               </div>
 

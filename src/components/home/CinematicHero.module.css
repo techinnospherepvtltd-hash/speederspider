@@ -1,0 +1,733 @@
+.hero {
+  --navy: #0B132B;
+  --dark-blue: #1C2541;
+  --steel-blue: #3A506B;
+  --cyan: #5BC0DE;
+  --cream: #F4D6B0;
+  --amber: #D97706;
+
+  min-height: calc(100svh - 5rem);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 70%,
+      rgba(91, 192, 222, 0.20),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      var(--navy) 0%,
+      var(--dark-blue) 65%,
+      var(--navy) 100%
+    );
+  color: var(--cream);
+  font-family: 'Recursive', system-ui, sans-serif;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.08;
+
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 4px,
+    var(--cyan) 5px,
+    transparent 6px
+  );
+
+  pointer-events: none;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: -180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 850px;
+  height: 350px;
+  background: var(--cyan);
+  opacity: 0.17;
+  filter: blur(130px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* WORKSHOP TELEMETRY BAR (ATELIER IDENTITY) */
+
+.telemetry-bar {
+  position: relative;
+  z-index: 10;
+  padding: 16px 5% 0 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.telemetry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: rgba(28, 37, 65, 0.7);
+  border: 1px solid rgba(91, 192, 222, 0.25);
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(244, 214, 176, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+.telemetry-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: dotPulse 2s infinite ease-in-out;
+}
+
+.telemetry-brand {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.telemetry-slash {
+  color: var(--cyan);
+}
+
+@media (min-width: 640px) {
+  .telemetry-brand {
+    display: flex;
+  }
+}
+
+/* HERO STAGE: Wraps background typography and vehicle */
+
+.hero-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* PARALLAX CONTAINERS */
+
+.parallax-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+}
+
+.parallax-car {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform;
+}
+
+/* BACKGROUND TYPOGRAPHY */
+
+.background-title {
+  position: absolute;
+  top: 10.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+
+  font-family: 'Russo One', 'Barlow Condensed', sans-serif;
+  font-size: clamp(130px, 21vw, 300px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -8px;
+
+  color: rgba(244, 214, 176, 0.12);
+  -webkit-text-stroke: 1px rgba(91, 192, 222, 0.35);
+
+  z-index: 1;
+  pointer-events: none;
+  animation: titleReveal 1.2s ease-out both;
+}
+
+.background-subtitle {
+  display: block;
+  font-size: clamp(12px, 1.5vw, 18px);
+  letter-spacing: 6px;
+  color: rgba(91, 192, 222, 0.4);
+  font-weight: 700;
+  margin-top: -6px;
+}
+
+@keyframes titleReveal {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 35px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* CAR IMAGE */
+
+.car-wrapper {
+  position: absolute;
+  z-index: 2;
+
+  /* Positioned so the upper half (~50%) of the background text is clearly visible */
+  top: 21%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* Reduced car size for refined proportions, text exposure and generous CTA clearance */
+  width: min(73%, 860px);
+}
+
+.car-wrapper img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+
+  filter:
+    drop-shadow(0 30px 25px rgba(0, 0, 0, 0.65))
+    drop-shadow(0 0 22px rgba(91, 192, 222, 0.16));
+
+  animation: carReveal 1.3s ease-out both, carFloat 6s ease-in-out 1.4s infinite;
+}
+
+/* REALISTIC FLOOR CONTACT SHADOWS */
+
+.car-shadow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 24px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.45) 50%, transparent 75%);
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.car-glow {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 68%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, rgba(91, 192, 222, 0.28) 0%, transparent 70%);
+  filter: blur(14px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes carReveal {
+  from {
+    opacity: 0;
+    transform: translateY(55px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes carFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* BOTTOM CONTENT */
+
+.hero-bottom {
+  position: absolute;
+  bottom: 45px;
+  left: 5%;
+  right: 5%;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+
+  z-index: 5;
+}
+
+.hero-description {
+  max-width: 440px;
+  animation: contentReveal 0.9s ease-out 0.7s both;
+}
+
+.hero-description p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--cream);
+  opacity: 0.85;
+  margin-bottom: 22px;
+}
+
+.cta-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.shop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 23px;
+
+  background: var(--cyan);
+  color: var(--navy);
+
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.shop-btn:hover {
+  background: var(--amber);
+  color: white;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+}
+
+.shop-btn span {
+  font-size: 20px;
+  display: inline-block;
+  transition: transform 0.3s ease;
+  line-height: 1;
+}
+
+.shop-btn:hover span {
+  transform: translate(3px, -3px);
+}
+
+.view-work-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+
+  background: rgba(28, 37, 65, 0.65);
+  border: 1px solid rgba(91, 192, 222, 0.4);
+  color: #FFFFFF;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.view-work-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(28, 37, 65, 0.95);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(91, 192, 222, 0.25);
+}
+
+/* RIGHT HEADING */
+
+.hero-heading {
+  max-width: 510px;
+
+  font-family: 'Russo One', 'Barlow Condensed', sans-serif;
+  font-size: clamp(38px, 4.3vw, 62px);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.02;
+
+  color: var(--cream);
+  text-align: right;
+  animation: contentReveal 0.9s ease-out 1s both;
+}
+
+.hero-heading span {
+  color: var(--cyan);
+}
+
+.hero-heading-sub {
+  display: block;
+  margin-top: 14px;
+  color: var(--cream);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+@keyframes contentReveal {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+/* TABLET */
+
+@media (max-width: 1024px) {
+  .background-title {
+    top: 11%;
+    font-size: clamp(90px, 15vw, 170px);
+  }
+
+  .car-wrapper {
+    top: 20%;
+    width: min(76%, 660px);
+  }
+
+  .hero-heading {
+    font-size: 38px;
+  }
+
+  .hero-bottom {
+    bottom: 35px;
+    gap: 20px;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: auto;
+    height: auto;
+    padding-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(
+        ellipse at 50% 35%,
+        rgba(91, 192, 222, 0.22),
+        transparent 58%
+      ),
+      linear-gradient(
+        180deg,
+        var(--navy) 0%,
+        var(--dark-blue) 60%,
+        var(--navy) 100%
+      );
+  }
+
+  .hero::after {
+    bottom: -90px;
+    width: 450px;
+    height: 160px;
+    opacity: 0.14;
+    filter: blur(80px);
+  }
+
+  .telemetry-bar {
+    padding: 14px 5% 0 5%;
+  }
+
+  /* Compact relative stage: confines NEW ERA and vehicle to a tight, proportional frame */
+  .hero-stage {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: clamp(200px, 28vh, 235px);
+    margin-top: 6px;
+    z-index: 2;
+  }
+
+  .parallax-bg,
+  .parallax-car {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none !important;
+  }
+
+  .background-title {
+    /* Positioned near the top of the stage so ~50% is visible above the car */
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(72px, 20vw, 100px);
+    letter-spacing: -3px;
+    line-height: 0.88;
+  }
+
+  .background-subtitle {
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: -3px;
+  }
+
+  .car-wrapper {
+    /* Scaled and positioned so the roofline cuts across the mid-height of NEW ERA */
+    top: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(84%, 350px);
+  }
+
+  .car-shadow {
+    bottom: -4px;
+    height: 16px;
+    filter: blur(6px);
+  }
+
+  .car-glow {
+    bottom: -1px;
+    height: 14px;
+    filter: blur(10px);
+  }
+
+  /* Bottom content flows naturally right below the car stage with a tight, intentional gap */
+  .hero-bottom {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    padding: 0 5%;
+    margin-top: 10px;
+
+    /* Reversing stack order puts the punchy heading on top, followed by description and CTAs */
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 10px;
+    z-index: 10;
+  }
+
+  .hero-heading {
+    font-size: clamp(26px, 7vw, 34px);
+    text-align: left;
+    max-width: 100%;
+    line-height: 1.05;
+  }
+
+  .hero-heading-sub {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    margin-top: 5px;
+  }
+
+  .hero-description {
+    max-width: 100%;
+  }
+
+  .hero-description p {
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 380px;
+    margin-bottom: 10px;
+    color: rgba(244, 214, 176, 0.9);
+  }
+
+  .cta-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .shop-btn {
+    padding: 11px 18px;
+    font-size: 12px;
+    gap: 10px;
+  }
+
+  .view-work-btn {
+    padding: 10px 15px;
+    font-size: 12px;
+  }
+}
+
+/* SMALL MOBILE */
+
+@media (max-width: 420px) {
+  .hero {
+    padding-bottom: 22px;
+  }
+
+  .hero-stage {
+    height: clamp(180px, 25vh, 205px);
+    margin-top: 4px;
+  }
+
+  .background-title {
+    top: 8px;
+    font-size: clamp(62px, 18.5vw, 80px);
+    letter-spacing: -2px;
+  }
+
+  .car-wrapper {
+    top: 40px;
+    width: min(86%, 305px);
+  }
+
+  .hero-bottom {
+    margin-top: 8px;
+    gap: 8px;
+  }
+
+  .hero-heading {
+    font-size: clamp(23px, 6.5vw, 26px);
+  }
+
+  .hero-heading-sub {
+    font-size: 9px;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .hero-description p {
+    font-size: 12px;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    max-width: 320px;
+  }
+
+  .shop-btn {
+    padding: 10px 15px;
+    font-size: 11.5px;
+    gap: 8px;
+  }
+
+  .view-work-btn {
+    padding: 9px 13px;
+    font-size: 11.5px;
+  }
+}
+
+/* SHORT LANDSCAPE SCREENS */
+
+@media (max-height: 600px) and (min-width: 769px) {
+  .hero {
+    min-height: 600px;
+  }
+
+  .background-title {
+    top: 10%;
+  }
+
+  .car-wrapper {
+    top: 16%;
+    width: min(70%, 750px);
+  }
+
+  .hero-bottom {
+    bottom: 20px;
+  }
+}
+
+/* RTL (ARABIC) ADAPTATION */
+
+:global([dir="rtl"]) .hero {
+  direction: rtl;
+}
+
+:global([dir="rtl"]) .hero-heading {
+  text-align: left;
+}
+
+:global([dir="rtl"]) .hero-heading,
+:global([dir="rtl"]) .hero-heading-sub {
+  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+}
+
+:global([dir="rtl"]) .hero-description {
+  text-align: right;
+}
+
+:global([dir="rtl"]) .shop-btn span {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+:global([dir="rtl"]) .shop-btn:hover span {
+  transform: scaleX(-1) translate(3px, -3px);
+}
+
+@media (max-width: 768px) {
+  :global([dir="rtl"]) .hero-heading {
+    text-align: right;
+  }
+
+  :global([dir="rtl"]) .hero-bottom {
+    align-items: flex-start;
+  }
+}
+
+/* REDUCED MOTION ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero *,
+  .hero *::before,
+  .hero *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .parallax-bg,
+  .parallax-car {
+    transform: none !important;
+  }
+}

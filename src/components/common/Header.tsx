@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { Menu, X, MessageSquare, Globe, ChevronDown, Wrench } from 'lucide-react';
+import { Menu, X, MessageSquare, Globe, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   lang: Language;
@@ -41,12 +42,19 @@ export function Header({ lang }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Brand Logo */}
-          <Link href={`/${lang}`} className="flex items-center gap-2 group">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-cyan/40 text-brand-cyan group-hover:border-brand-cyan transition-colors">
-              <Wrench className="w-5 h-5 transition-transform group-hover:rotate-45" />
+          <Link href={`/${lang}`} className="flex items-center gap-3 group">
+            <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-brand-navy border border-brand-cyan/40 p-1 group-hover:border-brand-cyan group-hover:shadow-[0_0_15px_rgba(91,192,222,0.4)] transition-all overflow-hidden shrink-0">
+              <Image
+                src="/images/speederspider-crest-car.webp"
+                alt="SpeederSpider Brand Crest"
+                width={44}
+                height={44}
+                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                priority
+              />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-widest text-white uppercase font-display leading-tight">
+              <span className="text-xl font-bold tracking-widest text-white uppercase font-display leading-tight group-hover:text-brand-cyan transition-colors">
                 SPEEDER<span className="text-brand-cyan">SPIDER</span>
               </span>
               <span className="text-[10px] tracking-wider uppercase text-gray-400 font-mono">

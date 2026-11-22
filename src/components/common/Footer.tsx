@@ -1,16 +1,22 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { MapPin, Phone, MessageSquare, ShieldAlert, ArrowUpRight, Wrench } from 'lucide-react';
+import { MapPin, Phone, MessageSquare, ShieldAlert, ArrowUpRight } from 'lucide-react';
+import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 
 interface FooterProps {
   lang: Language;
+  googleReviewUrl?: string | null;
 }
 
-export function Footer({ lang }: FooterProps) {
+export function Footer({ lang, googleReviewUrl }: FooterProps) {
   const dict = dictionaries[lang];
   const isRtl = lang === 'ar';
+  const officialAddress = isRtl
+    ? "شارع الأصايل - القوز الصناعية الثانية - القوز - دبي"
+    : "Al Asayel St - Al Qouz Ind. Second - Al Quoz - Dubai";
 
   const services = [
     { slug: 'upholstery', title: isRtl ? 'تنجيد السيارات الفاخرة' : 'Custom Upholstery' },
@@ -28,24 +34,33 @@ export function Footer({ lang }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Column */}
           <div className="space-y-4">
-            <Link href={`/${lang}`} className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-navy border border-brand-cyan/40 text-brand-cyan">
-                <Wrench className="w-4 h-4" />
+            <Link href={`/${lang}`} className="inline-block group">
+              <div className="relative w-48 sm:w-56 h-auto mb-1">
+                <Image
+                  src="/images/speederspider-shield-full.webp"
+                  alt="SpeederSpider Dubai - Drive Beyond Ordinary"
+                  width={240}
+                  height={172}
+                  className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-[0_4px_20px_rgba(91,192,222,0.3)]"
+                />
               </div>
-              <span className="text-xl font-bold tracking-widest text-white uppercase font-display">
-                SPEEDER<span className="text-brand-cyan">SPIDER</span>
-              </span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
               {dict.footer.tagline}
             </p>
+
+            {/* Google Review CTA Button */}
+            <div className="pt-2">
+              <GoogleReviewButton lang={lang} reviewUrl={googleReviewUrl} />
+            </div>
+
             {/* Social Media Links */}
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-3 pt-3">
               <a
                 href="https://www.instagram.com/dsusvip?bqrl=MWw5YnQ5YmdqYWowbg=="
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-brand-cyan hover:border-brand-cyan transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-brand-amber hover:border-brand-amber transition-colors"
                 title="SpeederSpider Instagram"
               >
                 <span className="text-xs font-bold font-mono">IG</span>
@@ -73,7 +88,8 @@ export function Footer({ lang }: FooterProps) {
 
           {/* Quick Navigation */}
           <div>
-            <h3 className="text-sm font-semibold tracking-wider uppercase text-white font-mono mb-4">
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-white font-mono mb-4 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
               {dict.footer.quickLinks}
             </h3>
             <ul className="space-y-2.5 text-sm">
@@ -107,7 +123,8 @@ export function Footer({ lang }: FooterProps) {
 
           {/* 7 Services Links */}
           <div>
-            <h3 className="text-sm font-semibold tracking-wider uppercase text-white font-mono mb-4">
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-white font-mono mb-4 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-amber" />
               {dict.footer.servicesList}
             </h3>
             <ul className="space-y-2.5 text-xs">
@@ -118,24 +135,25 @@ export function Footer({ lang }: FooterProps) {
                     className="hover:text-brand-cyan transition-colors flex items-center justify-between group"
                   >
                     <span>{s.title}</span>
-                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:text-brand-amber transition-all" />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Workshop Contact & Coordinates */}
+          {/* Workshop Contact & Official Address */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold tracking-wider uppercase text-white font-mono mb-4">
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-white font-mono mb-4 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
               {dict.footer.contactInfo}
             </h3>
             <div className="flex items-start gap-3 text-sm">
-              <MapPin className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
+              <MapPin className="w-5 h-5 text-brand-amber shrink-0 mt-0.5" />
               <div>
-                <p className="text-white font-medium">Dubai, United Arab Emirates</p>
-                <p className="text-xs font-mono text-gray-400 mt-0.5">
-                  Lat: 25.140658° N • Lng: 55.241515° E
+                <p className="text-white font-medium">{officialAddress}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Al Quoz Industrial Area 2, Dubai, UAE
                 </p>
               </div>
             </div>
@@ -152,7 +170,7 @@ export function Footer({ lang }: FooterProps) {
                 href="https://wa.me/971565694440"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan rounded hover:bg-brand-cyan/90 transition-all"
+                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan rounded hover:bg-brand-cyan/90 transition-all shadow-[0_0_12px_rgba(91,192,222,0.3)]"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>WhatsApp: 0565694440</span>
@@ -173,7 +191,7 @@ export function Footer({ lang }: FooterProps) {
             </Link>
             <Link
               href="/admin/login"
-              className="flex items-center gap-1 text-gray-400 hover:text-brand-cyan transition-colors"
+              className="flex items-center gap-1.5 text-gray-400 hover:text-brand-amber transition-colors"
             >
               <ShieldAlert className="w-3.5 h-3.5 text-brand-amber" />
               <span>{dict.footer.adminPortal}</span>

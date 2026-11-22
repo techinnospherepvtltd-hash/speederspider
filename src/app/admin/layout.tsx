@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -64,8 +65,16 @@ export default function AdminLayout({
     <div className="min-h-screen bg-brand-deepNavy flex flex-col md:flex-row text-gray-200">
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-brand-navy border-b border-brand-steelBlue/40">
-        <div className="flex items-center gap-2">
-          <Wrench className="w-5 h-5 text-brand-cyan" />
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-8 h-8 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 p-0.5 overflow-hidden shrink-0">
+            <Image
+              src="/images/speederspider-crest-car.webp"
+              alt="SpeederSpider"
+              width={32}
+              height={32}
+              className="w-full h-full object-contain"
+            />
+          </div>
           <span className="font-display font-bold uppercase tracking-wider text-white">
             SPEEDER<span className="text-brand-cyan">ADMIN</span>
           </span>
@@ -80,15 +89,20 @@ export default function AdminLayout({
 
       {/* Sidebar Navigation */}
       <aside
-        className={`${
-          mobileOpen ? 'block' : 'hidden'
-        } md:block w-full md:w-64 bg-brand-navy border-r border-brand-steelBlue/30 flex flex-col justify-between p-6 shrink-0 z-30`}
+        className={`${mobileOpen ? 'block' : 'hidden'
+          } md:block w-full md:w-64 bg-brand-navy border-r border-brand-steelBlue/30 flex flex-col justify-between p-6 shrink-0 z-30`}
       >
         <div className="space-y-6">
           {/* Brand & Portal Header */}
-          <div className="hidden md:flex items-center gap-2 pb-4 border-b border-brand-steelBlue/30">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan">
-              <Wrench className="w-4 h-4" />
+          <div className="hidden md:flex items-center gap-3 pb-4 border-b border-brand-steelBlue/30">
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 p-1 shrink-0 overflow-hidden shadow-[0_0_10px_rgba(91,192,222,0.25)]">
+              <Image
+                src="/images/speederspider-crest-car.webp"
+                alt="SpeederSpider Admin"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <p className="text-sm font-bold uppercase font-display tracking-wider text-white">
@@ -135,11 +149,10 @@ export default function AdminLayout({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-medium transition-colors ${
-                    isActive
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-medium transition-colors ${isActive
                       ? 'bg-brand-cyan text-brand-deepNavy font-bold shadow-[0_0_15px_rgba(91,192,222,0.3)]'
                       : 'text-gray-300 hover:bg-brand-steelBlue/30 hover:text-brand-cyan'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>

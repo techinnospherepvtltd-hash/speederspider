@@ -1,12 +1,18 @@
 import React from 'react';
 import Link from 'next/link';
-import { Wrench } from 'lucide-react';
+import Image from 'next/image';
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-brand-deepNavy flex flex-col items-center justify-center p-6 text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-brand-navy border border-brand-cyan/40 flex items-center justify-center text-brand-cyan shadow-[0_0_25px_rgba(91,192,222,0.3)]">
-        <Wrench className="w-8 h-8 animate-pulse" />
+      <div className="relative w-20 h-20 rounded-2xl bg-brand-navy border border-brand-cyan/40 p-2 flex items-center justify-center shadow-[0_0_25px_rgba(91,192,222,0.35)] overflow-hidden">
+        <Image
+          src="/images/speederspider-crest-car.webp"
+          alt="SpeederSpider Brand Crest"
+          width={80}
+          height={80}
+          className="w-full h-full object-contain animate-pulse"
+        />
       </div>
 
       <div className="space-y-2">

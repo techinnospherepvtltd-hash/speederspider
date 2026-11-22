@@ -2,9 +2,10 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { getServices } from '@/lib/data/db';
+import { getServices, getGoogleReviewSettings } from '@/lib/data/db';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { WorkshopMap } from '@/components/automotive/WorkshopMap';
+import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 import { MapPin, Phone, MessageSquare, Clock } from 'lucide-react';
 
 interface ContactPageProps {
@@ -18,11 +19,11 @@ export async function generateMetadata({
   const isRtl = lang === 'ar';
   return {
     title: isRtl
-      ? 'اتصل بنا | ورشة سبيدر سبايدر دبي'
-      : 'Contact Us | SpeederSpider Dubai Workshop',
+      ? 'اتصل بنا | ورشة سبيدر سبايدر دبي - شارع الأصايل القوز'
+      : 'Contact Us | SpeederSpider Dubai Workshop - Al Asayel St Al Quoz',
     description: isRtl
-      ? 'تواصل مع ورشة سبيدر سبايدر في دبي لحجز موعد استشارة لصيانة، تلميع، وتعديل السيارات. واتساب: 0565694440.'
-      : 'Contact SpeederSpider Dubai for luxury automotive repair, detailing, tinting, and upholstery consultation. WhatsApp: 0565694440.',
+      ? 'تواصل مع ورشة سبيدر سبايدر في دبي (شارع الأصايل - القوز الصناعية 2) لحجز موعد استشارة لصيانة، تلميع، وتعديل السيارات. واتساب: 0565694440.'
+      : 'Contact SpeederSpider Dubai at Al Asayel St, Al Quoz Industrial 2, for luxury automotive repair, detailing, tinting, and upholstery. WhatsApp: 0565694440.',
   };
 }
 
@@ -32,6 +33,12 @@ export default async function ContactPage({ params }: ContactPageProps) {
   const isRtl = lang === 'ar';
   const dict = dictionaries[lang];
   const services = await getServices();
+  const googleSettings = await getGoogleReviewSettings();
+  const googleReviewUrl = googleSettings?.is_enabled && googleSettings.url ? googleSettings.url : null;
+
+  const officialAddress = isRtl
+    ? "شارع الأصايل - القوز الصناعية الثانية - القوز - دبي"
+    : "Al Asayel St - Al Qouz Ind. Second - Al Quoz - Dubai";
 
   const whatsappMessage =
     lang === 'ar'
@@ -43,7 +50,8 @@ export default async function ContactPage({ params }: ContactPageProps) {
     <div className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
       {/* Editorial Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <span className="text-xs font-mono font-bold tracking-widest uppercase text-brand-cyan">
+        <span className="text-xs font-mono font-bold tracking-widest uppercase text-brand-amber flex items-center justify-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-amber" />
           {dict.contact.badge}
         </span>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white uppercase font-display">
@@ -67,6 +75,25 @@ export default async function ContactPage({ params }: ContactPageProps) {
           </div>
 
           <div className="space-y-6">
+            {/* Address */}
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-amber/40 text-brand-amber shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase font-mono text-gray-400">
+                  {isRtl ? 'العنوان الرسمي' : 'Official Workshop Address'}
+                </p>
+                <p className="text-sm font-semibold text-white mt-0.5 leading-snug">
+                  {officialAddress}
+                </p>
+                <p className="text-[11px] font-mono text-gray-400 mt-0.5">
+                  Al Quoz Industrial Area 2, Dubai, UAE
+                </p>
+              </div>
+            </div>
+
+            {/* WhatsApp */}
             <div className="flex items-start gap-4">
               <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan shrink-0">
                 <MessageSquare className="w-5 h-5" />
@@ -84,6 +111,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
               </div>
             </div>
 
+            {/* Telephone */}
             <div className="flex items-start gap-4">
               <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan shrink-0">
                 <Phone className="w-5 h-5" />
@@ -99,19 +127,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan shrink-0">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs uppercase font-mono text-gray-400">Location</p>
-                <p className="text-sm text-white">Dubai, United Arab Emirates</p>
-                <p className="text-[11px] font-mono text-brand-warmBeige mt-0.5">
-                  25.140658° N, 55.241515° E
-                </p>
-              </div>
-            </div>
-
+            {/* Hours */}
             <div className="flex items-start gap-4">
               <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan shrink-0">
                 <Clock className="w-5 h-5" />
@@ -123,6 +139,11 @@ export default async function ContactPage({ params }: ContactPageProps) {
               </div>
             </div>
           </div>
+
+          {/* Rate Us on Google Button */}
+          <div className="pt-4 border-t border-brand-steelBlue/30">
+            <GoogleReviewButton lang={lang} reviewUrl={googleReviewUrl} className="w-full justify-center" />
+          </div>
         </div>
 
         {/* Right Column: Interactive Contact Form */}
@@ -133,7 +154,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
 
       {/* Map Section */}
       <div className="pt-8">
-        <WorkshopMap lang={lang} />
+        <WorkshopMap lang={lang} googleReviewUrl={googleReviewUrl} />
       </div>
     </div>
   );

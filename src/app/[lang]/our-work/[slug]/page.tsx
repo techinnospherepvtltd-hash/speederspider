@@ -20,10 +20,19 @@ export async function generateMetadata({
   if (!project) return { title: 'Project Not Found | SpeederSpider' };
 
   const isRtl = lang === 'ar';
+  const title = isRtl
+    ? (project.seo_title_ar || `${project.title_ar} | SpeederSpider دبي`)
+    : (project.seo_title_en || `${project.title_en} | SpeederSpider Dubai`);
+  const description = isRtl
+    ? (project.seo_desc_ar || project.short_desc_ar || project.desc_ar)
+    : (project.seo_desc_en || project.short_desc_en || project.desc_en);
+
   return {
-    title: `${isRtl ? project.title_ar : project.title_en} | SpeederSpider Dubai`,
-    description: isRtl ? project.desc_ar : project.desc_en,
+    title,
+    description,
     openGraph: {
+      title,
+      description,
       images: [{ url: project.after_image }],
     },
   };

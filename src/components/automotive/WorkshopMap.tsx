@@ -2,17 +2,21 @@
 
 import React from 'react';
 import { MapPin, Navigation, Clock, Phone } from 'lucide-react';
+import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 
 interface WorkshopMapProps {
   lang: 'en' | 'ar';
+  googleReviewUrl?: string | null;
 }
 
-export function WorkshopMap({ lang }: WorkshopMapProps) {
+export function WorkshopMap({ lang, googleReviewUrl }: WorkshopMapProps) {
   const isRtl = lang === 'ar';
-  const lat = 25.140657502467402;
-  const lng = 55.24151547185268;
+  const officialAddressEn = "Al Asayel St - Al Qouz Ind. Second - Al Quoz - Dubai";
+  const officialAddressAr = "شارع الأصايل - القوز الصناعية الثانية - القوز - دبي";
+  const address = isRtl ? officialAddressAr : officialAddressEn;
 
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  // Google Maps navigation link based on the official address
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=Al+Asayel+St+-+Al+Qouz+Ind.+Second+-+Al+Quoz+-+Dubai`;
 
   return (
     <div className="w-full rounded-2xl overflow-hidden border border-brand-steelBlue/40 bg-brand-navy shadow-2xl">
@@ -21,7 +25,7 @@ export function WorkshopMap({ lang }: WorkshopMapProps) {
         <div className="lg:col-span-2 relative min-h-[350px] sm:min-h-[420px] bg-brand-deepNavy">
           <iframe
             title="SpeederSpider Dubai Workshop Location"
-            src={`https://maps.google.com/maps?q=${lat},${lng}&hl=${lang}&z=14&output=embed`}
+            src={`https://maps.google.com/maps?q=Al+Asayel+St+-+Al+Qouz+Ind.+Second+-+Al+Quoz+-+Dubai&hl=${lang}&z=14&output=embed`}
             width="100%"
             height="100%"
             style={{ border: 0 }}
@@ -33,35 +37,41 @@ export function WorkshopMap({ lang }: WorkshopMapProps) {
         </div>
 
         {/* Location Details Card */}
-        <div className="p-8 flex flex-col justify-between bg-gradient-to-br from-brand-navy to-brand-deepNavy border-t lg:border-t-0 lg:border-l border-brand-steelBlue/30">
+        <div className="p-8 flex flex-col justify-between bg-gradient-to-br from-brand-navy via-brand-navy to-brand-deepNavy border-t lg:border-t-0 lg:border-l border-brand-steelBlue/30">
           <div className="space-y-6">
             <div>
-              <span className="text-xs font-mono font-bold tracking-widest uppercase text-brand-cyan">
-                {isRtl ? 'الموقع الجغرافي' : 'WORKSHOP LOCATION'}
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-brand-amber flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-brand-amber animate-pulse" />
+                {isRtl ? 'الموقع الرسمي للورشة' : 'OFFICIAL WORKSHOP LOCATION'}
               </span>
-              <h3 className="text-2xl font-bold text-white mt-1 font-display">
+              <h3 className="text-2xl font-bold text-white mt-1.5 font-display">
                 SpeederSpider Dubai
               </h3>
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="text-sm text-gray-300 mt-2 leading-relaxed">
                 {isRtl
-                  ? 'مركز متخصص في صيانة، تلميع، وتعديل السيارات الفاخرة.'
+                  ? 'مركز متخصص في صيانة، تلميع، وتعديل السيارات الفاخرة في دبي.'
                   : 'Premier atelier for bespoke upholstery, detailing, electrical, and performance tuning in Dubai.'}
               </p>
             </div>
 
-            <div className="space-y-4 pt-2">
+            <div className="space-y-4 pt-1">
+              {/* Official Address */}
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs uppercase tracking-wider text-gray-400 font-mono">
-                    {isRtl ? 'الإحداثيات' : 'GPS Coordinates'}
+                    {isRtl ? 'العنوان' : 'Address'}
                   </p>
-                  <p className="text-sm font-mono text-white">
-                    {lat.toFixed(6)}° N, {lng.toFixed(6)}° E
+                  <p className="text-sm font-semibold text-white leading-snug mt-0.5">
+                    {address}
+                  </p>
+                  <p className="text-[11px] font-mono text-gray-400 mt-0.5">
+                    Al Quoz Industrial Area 2, Dubai, UAE
                   </p>
                 </div>
               </div>
 
+              {/* Working Hours */}
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
                 <div>
@@ -77,6 +87,7 @@ export function WorkshopMap({ lang }: WorkshopMapProps) {
                 </div>
               </div>
 
+              {/* Phone */}
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
                 <div>
@@ -91,7 +102,7 @@ export function WorkshopMap({ lang }: WorkshopMapProps) {
             </div>
           </div>
 
-          <div className="pt-8">
+          <div className="pt-6 space-y-3">
             <a
               href={googleMapsUrl}
               target="_blank"
@@ -101,6 +112,10 @@ export function WorkshopMap({ lang }: WorkshopMapProps) {
               <Navigation className="w-4 h-4" />
               <span>{isRtl ? 'فتح في خرائط جوجل' : 'Navigate via Google Maps'}</span>
             </a>
+
+            <div className="text-center">
+              <GoogleReviewButton lang={lang} reviewUrl={googleReviewUrl} variant="outline" className="w-full justify-center" />
+            </div>
           </div>
         </div>
       </div>

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, Mail, Wrench, UserCheck } from 'lucide-react';
+import { Shield, Lock, Mail, UserCheck } from 'lucide-react';
 import { UserRole } from '@/types';
 
 export default function AdminLoginPage() {
@@ -30,13 +31,17 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-brand-deepNavy flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-brand-navy border border-brand-steelBlue/40 rounded-2xl p-8 shadow-2xl space-y-6">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan mb-2">
-            <Wrench className="w-6 h-6" />
+        <div className="text-center space-y-3">
+          <div className="inline-block relative w-40 sm:w-48 h-auto mx-auto mb-1">
+            <Image
+              src="/images/speederspider-shield-full.webp"
+              alt="SpeederSpider Dubai"
+              width={192}
+              height={138}
+              className="w-full h-auto object-contain drop-shadow-[0_4px_25px_rgba(91,192,222,0.35)]"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-bold text-white uppercase font-display tracking-wider">
-            SPEEDER<span className="text-brand-cyan">SPIDER</span>
-          </h1>
           <p className="text-xs font-mono uppercase tracking-widest text-gray-400">
             INTERNAL WORKSHOP MANAGEMENT PORTAL
           </p>

@@ -3,9 +3,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { getServices, getFeaturedProjects, getTestimonials } from '@/lib/data/db';
+import { getServices, getFeaturedProjects, getTestimonials, getGoogleReviewSettings } from '@/lib/data/db';
 import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
 import { WorkshopMap } from '@/components/automotive/WorkshopMap';
+import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
+import { CinematicHero } from '@/components/home/CinematicHero';
 import { ArrowRight, ArrowLeft, Shield, Sparkles, Sun, Zap, Cpu, Radio, Wrench, MessageSquare, CheckCircle, Star } from 'lucide-react';
 
 interface HomePageProps {
@@ -21,6 +23,8 @@ export default async function HomePage({ params }: HomePageProps) {
   const services = await getServices();
   const featuredProjects = await getFeaturedProjects();
   const testimonials = await getTestimonials();
+  const googleReviewSettings = await getGoogleReviewSettings();
+  const googleReviewUrl = googleReviewSettings.url || '';
 
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
@@ -57,7 +61,9 @@ export default async function HomePage({ params }: HomePageProps) {
     },
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Dubai',
+      streetAddress: 'Al Asayel St - Al Qouz Ind. Second',
+      addressLocality: 'Al Quoz, Dubai',
+      addressRegion: 'Dubai',
       addressCountry: 'AE',
     },
     sameAs: [
@@ -74,74 +80,34 @@ export default async function HomePage({ params }: HomePageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 1. HERO SECTION */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-brand-deepNavy py-20 px-4 sm:px-6 lg:px-8">
-        {/* Background Atmospheric Imagery & Vignette */}
-        <div className="absolute inset-0 z-0 opacity-25">
-          <Image
-            src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=2000&q=85"
-            alt="Luxury supercar inside SpeederSpider automotive workshop Dubai"
-            fill
-            priority
-            className="object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-deepNavy via-brand-deepNavy/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-deepNavy via-transparent to-brand-deepNavy" />
-        </div>
+      {/* 1. CINEMATIC HERO SECTION (EDITORIAL CAMPAIGN COMPOSITION) */}
+      <CinematicHero lang={lang} dict={dict} whatsappUrl={whatsappUrl} />
 
-        <div className="relative z-10 max-w-5xl mx-auto text-center space-y-8">
-          {/* Telemetry Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-brand-navy/90 border border-brand-cyan/40 text-brand-cyan text-xs font-mono tracking-widest uppercase shadow-[0_0_15px_rgba(91,192,222,0.2)]">
-            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
-            <span>{dict.hero.badge}</span>
-          </div>
-
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase font-display leading-[1.1]">
-            {dict.hero.headlineStart}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan via-white to-brand-warmBeige">
-              {dict.hero.headlineAccent}
-            </span>{' '}
-            {dict.hero.headlineEnd}
-          </h1>
-
-          {/* Subheadline */}
-          <p className="max-w-3xl mx-auto text-base sm:text-lg text-gray-300 leading-relaxed font-normal">
-            {dict.hero.subheadline}
-          </p>
-
-          {/* Primary Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link
-              href={`/${lang}/contact`}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_25px_rgba(91,192,222,0.5)] hover:scale-105 active:scale-95"
-            >
-              <span>{dict.hero.primaryCta}</span>
-              <ArrowIcon className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href={`/${lang}/our-work`}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider text-white bg-brand-navy/80 hover:bg-brand-navy border border-brand-steelBlue/50 hover:border-brand-cyan rounded-lg transition-all"
-            >
-              <span>{dict.hero.secondaryCta}</span>
-            </Link>
-          </div>
-
-          {/* Telemetry Stats Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-12 border-t border-brand-steelBlue/30 max-w-4xl mx-auto">
-            <div className="p-4 bg-brand-navy/50 border border-brand-steelBlue/30 rounded-xl backdrop-blur-sm">
+      {/* 1B. WORKSHOP TELEMETRY METRIC STRIP */}
+      <section className="bg-[#070C1E] border-y border-brand-steelBlue/30 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+          <div className="p-4 rounded-xl bg-brand-deepNavy/70 border border-brand-steelBlue/30 hover:border-brand-cyan/40 transition-colors flex items-center justify-between">
+            <div>
               <p className="text-xl sm:text-2xl font-bold font-mono text-brand-cyan">{dict.hero.stat1Value}</p>
-              <p className="text-xs uppercase tracking-wider text-gray-400 font-mono mt-1">{dict.hero.stat1Label}</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 font-mono mt-0.5">{dict.hero.stat1Label}</p>
             </div>
-            <div className="p-4 bg-brand-navy/50 border border-brand-steelBlue/30 rounded-xl backdrop-blur-sm">
-              <p className="text-xl sm:text-2xl font-bold font-mono text-brand-warmBeige">{dict.hero.stat2Value}</p>
-              <p className="text-xs uppercase tracking-wider text-gray-400 font-mono mt-1">{dict.hero.stat2Label}</p>
+            <div className="w-2.5 h-2.5 rounded-full bg-brand-cyan/70 animate-pulse" />
+          </div>
+
+          <div className="p-4 rounded-xl bg-brand-deepNavy/70 border border-brand-steelBlue/30 hover:border-brand-amber/40 transition-colors flex items-center justify-between">
+            <div>
+              <p className="text-xl sm:text-2xl font-bold font-mono text-brand-amber">{dict.hero.stat2Value}</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 font-mono mt-0.5">{dict.hero.stat2Label}</p>
             </div>
-            <div className="p-4 bg-brand-navy/50 border border-brand-steelBlue/30 rounded-xl backdrop-blur-sm">
+            <div className="w-2.5 h-2.5 rounded-full bg-brand-amber/80 animate-pulse shadow-[0_0_8px_rgba(217,119,6,0.6)]" />
+          </div>
+
+          <div className="p-4 rounded-xl bg-brand-deepNavy/70 border border-brand-steelBlue/30 hover:border-emerald-400/40 transition-colors flex items-center justify-between">
+            <div>
               <p className="text-xl sm:text-2xl font-bold font-mono text-white">{dict.hero.stat3Value}</p>
-              <p className="text-xs uppercase tracking-wider text-gray-400 font-mono mt-1">{dict.hero.stat3Label}</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 font-mono mt-0.5">{dict.hero.stat3Label}</p>
             </div>
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
           </div>
         </div>
       </section>
@@ -162,49 +128,52 @@ export default async function HomePage({ params }: HomePageProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service) => (
-              <div
-                key={service.id}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-brand-navy/80 border border-brand-steelBlue/40 hover:border-brand-cyan/70 transition-all duration-300 hover:shadow-[0_0_30px_rgba(91,192,222,0.15)]"
-              >
-                {/* Service Card Image */}
-                <div className="relative h-48 w-full overflow-hidden bg-brand-deepNavy">
-                  <Image
-                    src={service.featured_image}
-                    alt={isRtl ? service.title_ar : service.title_en}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/40 to-transparent" />
-                  <div className="absolute top-4 left-4 p-2.5 rounded-lg bg-brand-deepNavy/80 backdrop-blur-md border border-brand-steelBlue/50">
-                    {getServiceIcon(service.icon_name)}
-                  </div>
-                </div>
-
-                {/* Service Details */}
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-white font-display group-hover:text-brand-cyan transition-colors">
-                      {isRtl ? service.title_ar : service.title_en}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 leading-relaxed">
-                      {isRtl ? service.short_desc_ar : service.short_desc_en}
-                    </p>
+            {services.map((service, index) => {
+              const delays = ['delay-100', 'delay-200', 'delay-300', 'delay-400', 'delay-500', 'delay-600', 'delay-700'];
+              return (
+                <div
+                  key={service.id}
+                  className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-brand-navy/80 border border-brand-steelBlue/40 hover:border-brand-cyan/70 transition-all duration-300 hover:shadow-[0_0_30px_rgba(91,192,222,0.15)] animate-scaleReveal ${delays[index % delays.length]} gpu-render`}
+                >
+                  {/* Service Card Image */}
+                  <div className="relative h-48 w-full overflow-hidden bg-brand-deepNavy">
+                    <Image
+                      src={service.featured_image}
+                      alt={isRtl ? service.title_ar : service.title_en}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/40 to-transparent" />
+                    <div className="absolute top-4 left-4 p-2.5 rounded-lg bg-brand-deepNavy/80 backdrop-blur-md border border-brand-steelBlue/50">
+                      {getServiceIcon(service.icon_name)}
+                    </div>
                   </div>
 
-                  <div className="pt-4 border-t border-brand-steelBlue/30 flex items-center justify-between">
-                    <Link
-                      href={`/${lang}/services/${isRtl ? service.slug_ar : service.slug_en}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-cyan hover:text-white transition-colors"
-                    >
-                      <span>{dict.services.exploreBtn}</span>
-                      <ArrowIcon className="w-3.5 h-3.5" />
-                    </Link>
+                  {/* Service Details */}
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-white font-display group-hover:text-brand-cyan transition-colors">
+                        {isRtl ? service.title_ar : service.title_en}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 leading-relaxed">
+                        {isRtl ? service.short_desc_ar : service.short_desc_en}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-brand-steelBlue/30 flex items-center justify-between">
+                      <Link
+                        href={`/${lang}/services/${isRtl ? service.slug_ar : service.slug_en}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-cyan hover:text-white transition-colors"
+                      >
+                        <span>{dict.services.exploreBtn}</span>
+                        <ArrowIcon className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="text-center pt-6">
@@ -422,6 +391,31 @@ export default async function HomePage({ params }: HomePageProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Rate Us on Google Banner */}
+          <div className="p-8 rounded-2xl bg-gradient-to-r from-brand-navy via-brand-deepNavy to-brand-navy border border-brand-steelBlue/40 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-1 text-brand-amber">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+                <span className="text-xs font-mono font-bold text-white ml-2">
+                  {isRtl ? 'تقييمات عملاء حقيقية' : 'Verified Google Reviews'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-gray-300">
+                {isRtl
+                  ? 'شاركنا تجربتك في ورشة سبيدر سبايدر لمساعدتنا في الحفاظ على أعلى معايير الجودة.'
+                  : 'Experienced our automotive craftsmanship? Share your review on Google to help fellow enthusiasts.'}
+              </p>
+            </div>
+
+            <GoogleReviewButton
+              reviewUrl={googleReviewUrl}
+              lang={lang}
+              className="shadow-[0_0_20px_rgba(217,119,6,0.25)] shrink-0"
+            />
           </div>
         </div>
       </section>

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Recursive:wght@400;500;600;700&family=Russo+One&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,16 +18,35 @@
     scroll-behavior: smooth;
     background-color: #0B132B;
     color: #F3F4F6;
+    font-family: 'Recursive', system-ui, sans-serif;
+    font-weight: 500;
   }
 
   body {
     background-color: #0B132B;
     color: #F3F4F6;
     overflow-x: hidden;
+    font-family: 'Recursive', system-ui, sans-serif;
+    font-weight: 500;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Russo One', sans-serif;
+    letter-spacing: -0.01em;
   }
 
   /* Direction-aware typography adjustments */
   [dir="rtl"] {
+    font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4,
+  [dir="rtl"] h5,
+  [dir="rtl"] h6,
+  [dir="rtl"] .font-display {
     font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
   }
 }
@@ -43,4 +64,33 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #5BC0DE;
+}
+
+/* Automotive UI Animations & Stagger Delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+
+/* GPU-accelerated smooth rendering */
+.gpu-render {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Reduced motion accessibility compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

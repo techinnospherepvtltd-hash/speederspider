@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface PreloaderProps {
   lang: 'en' | 'ar';
@@ -73,6 +74,18 @@ export function AutomotivePreloader({ lang }: PreloaderProps) {
               RPM • TELEMETRY
             </span>
           </div>
+        </div>
+
+        {/* Brand Crest Emblem */}
+        <div className="relative w-12 h-12 mb-2">
+          <Image
+            src="/images/speederspider-crest-car.webp"
+            alt="SpeederSpider Brand Crest"
+            width={48}
+            height={48}
+            className="w-full h-full object-contain drop-shadow-[0_0_12px_rgba(91,192,222,0.5)]"
+            priority
+          />
         </div>
 
         {/* Brand Name with Cyan Accent */}

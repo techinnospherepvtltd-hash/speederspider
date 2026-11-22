@@ -1,3 +1,4 @@
+
 # SpeederSpider - Features & Operations User Guide
 
 **Document Classification:** Mandatory Document B (Business Owner & Operations Manual)  
@@ -7,7 +8,10 @@
 ---
 
 ## 1. Overview of the Platform
-SpeederSpider is a premier automotive repair, maintenance, detailing, and customization digital platform based in Dubai, UAE (Coordinates: `25.140657502467402, 55.24151547185268`).
+SpeederSpider is a premier automotive repair, maintenance, detailing, and customization digital platform based in Dubai, UAE.
+* **Official Workshop Address:** `Al Asayel St - Al Qouz Ind. Second - Al Quoz - Dubai`
+* **Arabic Address:** `شارع الأصايل - القوز الصناعية الثانية - القوز - دبي`
+* **GPS Coordinates:** `25.140657502467402, 55.24151547185268`
 
 The platform consists of two integrated operational environments:
 1. **Public-Facing Bilingual Web Atelier:** Delivering a luxury automotive brand presence in English and Arabic for clients seeking high-end automotive craftsmanship across Dubai and neighboring Emirates.
@@ -26,6 +30,31 @@ The platform consists of two integrated operational environments:
 * High-impact automotive preloader featuring an accelerating RPM / speed gauge and telemetry status check.
 * Automatically dismisses cleanly upon readiness (maximum 1.4-second safety timeout ensures users are never trapped).
 * Automatically deactivated when `prefers-reduced-motion` is detected.
+
+### 2.2B Cinematic Automotive Hero Banner (DRIVEX Architecture)
+* **Full-Screen Atmospheric Composition:** Powered by a scoped CSS module architecture (`CinematicHero.module.css`), featuring a radial cyan horizon bloom over deep navy gradients (`#0B132B` to `#1C2541`), subtle repeating scanlines, and high-blur bottom glow.
+* **Positioning Hierarchy:**
+  * Background Typography: `.background-title` at `top: 10.5%` (desktop) and `top: 10px` within `.hero-stage` (mobile), rendered in **Russo One** with warm cream fill (`rgba(244, 214, 176, 0.12)`) and cyan outline stroke (`-webkit-text-stroke: 1px rgba(91, 192, 222, 0.35)`).
+  * Vehicle Wrapper: `.car-wrapper` elevated to `top: 21%` on desktop and `top: 48px` within `.hero-stage` on mobile with width `min(84%, 350px)`, allowing exactly 50% of `NEW ERA` to remain visible above the roofline.
+  * Desktop Bottom Split Layout: `.hero-bottom` at `bottom: 45px` with left/start editorial description and CTAs, and right/end uppercase headline (`DRIVE BEYOND ORDINARY.`).
+  * Mobile Compact Flow: `.hero` releases full-screen viewport locking (`min-height: auto;`) and `.hero-bottom` flows directly below the car with a tight ~14–18px gap, naturally exposing the workshop metrics and services section in the lower portion of the initial viewport.
+* **Animation Suite:**
+  * `titleReveal`: Background typography entrance (1.2s ease-out).
+  * `carReveal`: Upward scale entrance (1.3s cubic ease-out).
+  * `carFloat`: Continuous 6s ease-in-out breathing float effect.
+  * `contentReveal`: Staggered description (0.7s) and headline (1.0s) reveals.
+  * Decoupled mouse & scroll parallax that smoothly combines with CSS keyframes without overriding.
+* **Dual Action CTAs:** Primary button (`EXPLORE OUR SERVICES`) with hover amber transition (`#D97706`) and arrow micro-interaction, alongside secondary ghost button (`VIEW OUR WORK`).
+* **Full Bilingual & Responsive Layout:** Desktop, tablet, mobile (768px), small mobile (420px), and short landscape screens with full RTL Arabic support and `prefers-reduced-motion` compliance.
+
+### 2.2C Official Brand Crest & Identity System
+* **Authentic Brand Crest Ingestion:** Official metallic chrome shield emblem with mechanical spider crest, electric cyan supercar with glowing headlights, chrome `SPEEDER`, cyan `SPIDER®`, and `DRIVE BEYOND ORDINARY` tagline.
+* **Sitewide Integration:**
+  * **Header Brand Mark:** Replaced wrench icon with `speederspider-crest-car.webp` with interactive hover scale and cyan glow.
+  * **Footer Brand Anchor:** Displays full official `speederspider-shield-full.webp` crest above workshop description.
+  * **Admin Layout & Login:** Integrated official crest into admin portal navigation and login experience.
+  * **Browser Tab Favicons:** Generated crisp 32x32 `favicon.ico`, 192x192 `icon.png`, and 180x180 `apple-icon.png`.
+  * **OpenGraph & Twitter Cards:** Integrated official logo as primary social sharing visual.
 
 ### 2.3 Interactive Before-and-After Comparison Slider
 * Allows clients to visually evaluate SpeederSpider's transformation craftsmanship (e.g. multi-stage paint correction, leather upholstery restoration).
@@ -48,22 +77,26 @@ The platform consists of two integrated operational environments:
 * Saves submissions to the `contact_messages` database table and alerts workshop management via email.
 
 ### 2.6 Dubai Workshop Location & Map Embed
-* Embedded Google Map centered on workshop coordinates: `25.140657502467402, 55.24151547185268`.
-* Provides a one-click "Navigate via Google Maps" button for easy GPS routing.
+* Official physical workshop address prominently displayed: `Al Asayel St - Al Qouz Ind. Second - Al Quoz - Dubai`.
+* Embedded interactive map centered on the workshop premises with a direct "Navigate via Google Maps" button for instant GPS turn-by-turn routing.
+
+### 2.7 "Rate Us on Google" CTA Integration
+* Displays a branded Google Review call-to-action button with authentic Google icon and star rating indicators across the Footer, Contact Page, and Testimonials section.
+* Driven by a dynamic administrative setting stored in `site_settings`. When no review URL is configured, the button remains disabled or hidden to maintain trust and prevent dead navigation.
 
 ---
 
-## 3. The 7 Core Automotive Disciplines
+## 3. The 7 Core Automotive Disciplines (With Dedicated Before & After Comparisons)
 
-The platform manages and showcases seven distinct services:
+Every service discipline features a dedicated before-and-after visual comparison slider allowing customers to evaluate actual craftsmanship:
 
-1. **Custom Automotive Upholstery (`/services/upholstery`):** Bespoke Nappa leather seats, steering wheel wraps, Alcantara roof lining, and diamond stitching.
-2. **Detailing & Multi-Stage Polishing (`/services/detailing-polishing`):** Compound paint correction, 9H ceramic coatings, interior deep sanitation.
-3. **Nanoceramic Window Tinting (`/services/window-tinting`):** High infrared heat rejection films designed for Dubai summer heat.
-4. **Automotive Electrical Diagnostics (`/services/electrical`):** CAN-bus troubleshooting, ECU module repairs, and sensor calibrations.
-5. **Mechanical Maintenance & Overhauls (`/services/mechanical`):** Powertrain servicing, brake renewals, and suspension tuning.
-6. **Multimedia & Sound Systems (`/services/multimedia`):** Wireless Apple CarPlay, 360 surround-view cameras, DSP audio tuning.
-7. **Denting, Spray Painting & Bodywork (`/services/denting-painting`):** Paintless dent repair (PDR), spectrophotometer color matching, and dust-free baking booth refinishing.
+1. **Custom Automotive Upholstery (`/services/upholstery`):** Bespoke Nappa leather seats, steering wheel wraps, Alcantara roof lining, and diamond stitching. Includes Before/After slider showcasing leather restoration.
+2. **Detailing & Multi-Stage Polishing (`/services/detailing-polishing`):** Compound paint correction, 9H ceramic coatings, interior deep sanitation. Features multi-stage swirl removal comparison.
+3. **Nanoceramic Window Tinting (`/services/window-tinting`):** High infrared heat rejection films designed for Dubai summer heat. Shows clarity and UV/heat reduction tinting transformation.
+4. **Automotive Electrical Diagnostics (`/services/electrical`):** CAN-bus troubleshooting, ECU module repairs, and sensor calibrations. Features wiring harness restoration comparison.
+5. **Mechanical Maintenance & Overhauls (`/services/mechanical`):** Powertrain servicing, brake renewals, and suspension tuning. Features performance brake caliper overhaul before/after.
+6. **Multimedia & Sound Systems (`/services/multimedia`):** Wireless Apple CarPlay, 360 surround-view cameras, DSP audio tuning. Displays OEM infotainment screen upgrades.
+7. **Denting, Spray Painting & Bodywork (`/services/denting-painting`):** Paintless dent repair (PDR), spectrophotometer color matching, and dust-free baking booth refinishing. Shows high-precision quarter panel dent restoration.
 
 ---
 
@@ -85,18 +118,24 @@ The admin portal is protected and enforces role-based access control.
 * Configure display order and featured imagery.
 
 ### 4.4 Portfolio & Showcase Management (`/admin/portfolio`)
-* Add new completed vehicle projects.
-* Upload or link Before and After images.
-* Toggle "Featured" badge to display prominently on the homepage.
+* Add new completed vehicle projects with live image previews for Before & After paired imagery.
+* Provide Short Summaries (EN & AR) rendered on public showcase cards, and Full Scope Descriptions (EN & AR) rendered on dedicated project detail pages.
+* Configure Vehicle Make, Model, Year, and technical SEO Title & Description tags.
+* Toggle "Featured" badge to display prominently on the homepage, and switch between Published and Draft states.
 
 ### 4.5 Internal Workshop Inventory (`/admin/inventory`)
-* **Strictly Internal:** Inventory is not exposed to the public.
-* **Features:**
-  * Real-time search across SKUs, item names, and suppliers.
-  * Category filtering (Leather & Fabric, Detailing, Tint Films, Electrical, Fluids).
-  * **Low-Stock Filter:** Isolate supplies requiring urgent reordering.
+* **Strictly Internal:** Inventory is not exposed to the public. Zero mock data or automatic demo items are injected.
+* **Manual Item Creation:** Click "Add Inventory Item" to enter real workshop materials with:
+  * Name in English and Arabic.
+  * SKU / Part code (with optional one-click unique SKU generator).
+  * Category selector.
+  * Initial on-hand stock and minimum low-stock alert threshold.
+  * Unit cost price in AED, supplier name, and physical workshop storage bay.
+  * Status (`active`, `discontinued`, `archived`).
+* **Item Editing & Deletion:** In-line editing modal for any field, and safe permanent item deletion with confirmation modal.
+* **Atomic Stock Transactions:**
   * **Stock-In (+):** Records deliveries from suppliers with quantities and notes.
-  * **Stock-Out (-):** Deducts consumables used on customer vehicle jobs. Validates stock to prevent negative quantities.
+  * **Stock-Out (-):** Deducts consumables used on customer vehicle jobs. Validates stock to prevent negative balances.
   * **Manual Adjustment:** Allows reconciliation after physical workshop audits with mandatory reason logging.
   * **Audit Trail:** Append-only transaction log recording resulting quantities, timestamps, and performing users.
 
@@ -108,6 +147,12 @@ The admin portal is protected and enforces role-based access control.
 ### 4.7 Security & Audit Logs (`/admin/audit-logs`)
 * Restricted exclusively to the `OWNER` role.
 * Tracks administrative events, inventory movements, and login events with IP addresses.
+
+### 4.8 Google Review Settings (`/admin`)
+* Configured from the Admin Overview dashboard.
+* Allows workshop administrators to set or update the official Google Business Profile review URL.
+* Offers a "Test Link" button to verify the URL in a new tab before saving.
+* Automatically activates the "Rate Us on Google" CTA across the public website once saved.
 
 ---
 

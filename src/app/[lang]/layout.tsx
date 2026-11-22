@@ -6,6 +6,7 @@ import { Header } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 import { AutomotivePreloader } from '@/components/automotive/AutomotivePreloader';
+import { getGoogleReviewSettings } from '@/lib/data/db';
 
 interface BilingualLayoutProps {
   children: React.ReactNode;
@@ -29,8 +30,8 @@ export async function generateMetadata({
     : 'SpeederSpider | Automotive Repair, Detailing & Bespoke Customization Dubai';
 
   const description = isRtl
-    ? 'مركز سبيدر سبايدر في دبي لصيانة وتعديل السيارات. تنجيد جلد طبيعي، نانو سيراميك، عازل حراري، فحص وبرمجة كمبيوتر، صيانة ميكانيكية وسمكرة ودهان.'
-    : 'Dubai premier automotive atelier. Bespoke leather upholstery, nanoceramic detailing, window tinting, electrical diagnostics, mechanical overhauls, and bodywork.';
+    ? 'مركز سبيدر سبايدر في دبي لصيانة وتعديل السيارات. شارع الأصايل - القوز الصناعية الثانية - دبي. تنجيد جلد طبيعي، نانو سيراميك، عازل حراري، فحص وبرمجة كمبيوتر، صيانة ميكانيكية وسمكرة ودهان.'
+    : 'Dubai premier automotive atelier located at Al Asayel St, Al Quoz Industrial 2, Dubai. Bespoke leather upholstery, nanoceramic detailing, window tinting, electrical diagnostics, mechanical overhauls, and bodywork.';
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://speederspider.com';
 
@@ -52,6 +53,20 @@ export async function generateMetadata({
       siteName: 'SpeederSpider Dubai',
       locale: isRtl ? 'ar_AE' : 'en_AE',
       type: 'website',
+      images: [
+        {
+          url: `${siteUrl}/images/speederspider-logo.jpg`,
+          width: 1024,
+          height: 682,
+          alt: 'SpeederSpider Dubai - Drive Beyond Ordinary',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${siteUrl}/images/speederspider-logo.jpg`],
     },
   };
 }
@@ -68,6 +83,8 @@ export default async function BilingualLayout({
   }
 
   const isRtl = lang === 'ar';
+  const googleSettings = await getGoogleReviewSettings();
+  const googleReviewUrl = googleSettings?.is_enabled && googleSettings.url ? googleSettings.url : null;
 
   return (
     <div lang={lang} dir={isRtl ? 'rtl' : 'ltr'} className="flex flex-col min-h-screen">
@@ -82,8 +99,8 @@ export default async function BilingualLayout({
         {children}
       </main>
 
-      {/* Workshop Footer */}
-      <Footer lang={lang} />
+      {/* Workshop Footer with Google Review and Official Address */}
+      <Footer lang={lang} googleReviewUrl={googleReviewUrl} />
 
       {/* WhatsApp Quick Action Button */}
       <WhatsAppButton lang={lang} />

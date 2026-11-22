@@ -25,6 +25,17 @@ export interface ServiceItem {
   icon_name: string;
   featured_image: string;
   gallery_images: string[];
+  // Dedicated Before & After visual comparison for every service
+  before_image?: string | null;
+  after_image?: string | null;
+  before_caption_en?: string | null;
+  before_caption_ar?: string | null;
+  after_caption_en?: string | null;
+  after_caption_ar?: string | null;
+  before_alt_en?: string | null;
+  before_alt_ar?: string | null;
+  after_alt_en?: string | null;
+  after_alt_ar?: string | null;
   seo_title_en?: string | null;
   seo_title_ar?: string | null;
   seo_desc_en?: string | null;
@@ -41,8 +52,10 @@ export interface PortfolioProject {
   service_id?: string | null;
   title_en: string;
   title_ar: string;
-  desc_en: string;
-  desc_ar: string;
+  short_desc_en?: string | null;
+  short_desc_ar?: string | null;
+  desc_en: string; // Full project description
+  desc_ar: string; // Full project description
   vehicle_make?: string | null;
   vehicle_model?: string | null;
   vehicle_year?: string | null;
@@ -53,6 +66,10 @@ export interface PortfolioProject {
   is_featured: boolean;
   is_published: boolean;
   display_order: number;
+  seo_title_en?: string | null;
+  seo_title_ar?: string | null;
+  seo_desc_en?: string | null;
+  seo_desc_ar?: string | null;
   created_at: string;
   updated_at: string;
   service?: ServiceItem;
