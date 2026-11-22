@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { PortfolioProject } from '@/types';
+import { normalizeGoogleDriveUrl } from '@/lib/utils';
 import {
   Plus,
   Edit,
@@ -88,11 +89,19 @@ export default function AdminPortfolioPage() {
     setFormError('');
     setIsSaving(true);
 
+    const payload = {
+      ...formData,
+      service_id: formData.service_id && formData.service_id.length > 20 ? formData.service_id : null,
+      before_image: normalizeGoogleDriveUrl(formData.before_image),
+      after_image: normalizeGoogleDriveUrl(formData.after_image),
+      gallery_images: (formData.gallery_images || []).map(normalizeGoogleDriveUrl),
+    };
+
     try {
       const res = await fetch('/api/portfolio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 
@@ -117,11 +126,19 @@ export default function AdminPortfolioPage() {
     setFormError('');
     setIsSaving(true);
 
+    const payload = {
+      ...editingProject,
+      service_id: editingProject.service_id && editingProject.service_id.length > 20 ? editingProject.service_id : null,
+      before_image: normalizeGoogleDriveUrl(editingProject.before_image),
+      after_image: normalizeGoogleDriveUrl(editingProject.after_image),
+      gallery_images: (editingProject.gallery_images || []).map(normalizeGoogleDriveUrl),
+    };
+
     try {
       const res = await fetch('/api/portfolio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingProject),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 
@@ -503,14 +520,18 @@ export default function AdminPortfolioPage() {
               {/* Before & After Images */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-xs font-mono uppercase text-gray-300">
-                    Before Image URL <span className="text-brand-cyan">*</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono uppercase text-gray-300">
+                      Before Image URL <span className="text-brand-cyan">*</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-brand-cyan/80">Drive links supported</span>
+                  </div>
                   <input
                     type="url"
                     required
+                    placeholder="https://... or Google Drive share link"
                     value={formData.before_image}
-                    onChange={(e) => setFormData({ ...formData, before_image: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, before_image: normalizeGoogleDriveUrl(e.target.value) })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs font-mono text-white focus:outline-none focus:border-brand-cyan"
                   />
                   {formData.before_image && (
@@ -519,6 +540,7 @@ export default function AdminPortfolioPage() {
                         src={formData.before_image}
                         alt="Before Preview"
                         fill
+                        unoptimized
                         className="object-cover"
                       />
                       <span className="absolute bottom-1 left-2 text-[10px] font-mono uppercase bg-black/70 px-1.5 py-0.5 rounded text-white">
@@ -529,14 +551,18 @@ export default function AdminPortfolioPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-mono uppercase text-gray-300">
-                    After Image URL <span className="text-brand-cyan">*</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono uppercase text-gray-300">
+                      After Image URL <span className="text-brand-cyan">*</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-brand-cyan/80">Drive links supported</span>
+                  </div>
                   <input
                     type="url"
                     required
+                    placeholder="https://... or Google Drive share link"
                     value={formData.after_image}
-                    onChange={(e) => setFormData({ ...formData, after_image: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, after_image: normalizeGoogleDriveUrl(e.target.value) })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs font-mono text-white focus:outline-none focus:border-brand-cyan"
                   />
                   {formData.after_image && (
@@ -545,6 +571,7 @@ export default function AdminPortfolioPage() {
                         src={formData.after_image}
                         alt="After Preview"
                         fill
+                        unoptimized
                         className="object-cover"
                       />
                       <span className="absolute bottom-1 left-2 text-[10px] font-mono uppercase bg-black/70 px-1.5 py-0.5 rounded text-white">
@@ -753,12 +780,16 @@ export default function AdminPortfolioPage() {
               {/* Before & After Images */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-xs font-mono uppercase text-gray-300">Before Image URL</label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono uppercase text-gray-300">Before Image URL</label>
+                    <span className="text-[10px] font-mono text-brand-cyan/80">Drive links supported</span>
+                  </div>
                   <input
                     type="url"
                     required
+                    placeholder="https://... or Google Drive share link"
                     value={editingProject.before_image}
-                    onChange={(e) => setEditingProject({ ...editingProject, before_image: e.target.value })}
+                    onChange={(e) => setEditingProject({ ...editingProject, before_image: normalizeGoogleDriveUrl(e.target.value) })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs font-mono text-white"
                   />
                   {editingProject.before_image && (
@@ -767,6 +798,7 @@ export default function AdminPortfolioPage() {
                         src={editingProject.before_image}
                         alt="Before Preview"
                         fill
+                        unoptimized
                         className="object-cover"
                       />
                     </div>
@@ -774,12 +806,16 @@ export default function AdminPortfolioPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-mono uppercase text-gray-300">After Image URL</label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono uppercase text-gray-300">After Image URL</label>
+                    <span className="text-[10px] font-mono text-brand-cyan/80">Drive links supported</span>
+                  </div>
                   <input
                     type="url"
                     required
+                    placeholder="https://... or Google Drive share link"
                     value={editingProject.after_image}
-                    onChange={(e) => setEditingProject({ ...editingProject, after_image: e.target.value })}
+                    onChange={(e) => setEditingProject({ ...editingProject, after_image: normalizeGoogleDriveUrl(e.target.value) })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs font-mono text-white"
                   />
                   {editingProject.after_image && (
@@ -788,6 +824,7 @@ export default function AdminPortfolioPage() {
                         src={editingProject.after_image}
                         alt="After Preview"
                         fill
+                        unoptimized
                         className="object-cover"
                       />
                     </div>

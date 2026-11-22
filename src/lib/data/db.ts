@@ -1,4 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { normalizeGoogleDriveUrl } from '@/lib/utils';
 import { INITIAL_SERVICES, INITIAL_PROJECTS, INITIAL_TESTIMONIALS, INITIAL_INVENTORY, INITIAL_CATEGORIES } from '@/lib/data/mock-data';
 import {
   ServiceItem,
@@ -11,6 +13,14 @@ import {
   EnquiryStatus,
   SiteSetting,
 } from '@/types';
+
+// Helper to obtain authorized database client for mutations & admin queries
+// Uses service_role client when available on server to bypass RLS, falling back to session client
+async function getDbClient() {
+  const admin = createAdminClient();
+  if (admin) return admin;
+  return await createServerSupabaseClient();
+}
 
 // In-memory runtime store for dynamic mutations during development if Supabase keys not set
 let memoryServices: ServiceItem[] = [...INITIAL_SERVICES];
@@ -70,7 +80,7 @@ export async function getServiceBySlug(slug: string): Promise<ServiceItem | null
 }
 
 export async function updateServiceItem(id: string, updates: Partial<ServiceItem>): Promise<ServiceItem | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('services')
@@ -104,7 +114,7 @@ export async function getProjects(): Promise<PortfolioProject[]> {
 }
 
 export async function getAllProjectsAdmin(): Promise<PortfolioProject[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('portfolio_projects')
@@ -121,7 +131,7 @@ export async function getFeaturedProjects(): Promise<PortfolioProject[]> {
 }
 
 export async function getProjectBySlug(slug: string): Promise<PortfolioProject | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('portfolio_projects')
@@ -134,55 +144,101 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioProject |
 }
 
 export async function createProject(project: Omit<PortfolioProject, 'id' | 'created_at' | 'updated_at'>): Promise<PortfolioProject> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   const now = new Date().toISOString();
-  const newProject: PortfolioProject = {
+
+  // Clean empty strings for UUID fields and normalize Google Drive image links
+  const validServiceId = project.service_id && project.service_id.length > 20 ? project.service_id : null;
+  const cleanedProject = {
     ...project,
-    id: 'proj-' + Math.random().toString(36).substring(2, 9),
-    created_at: now,
-    updated_at: now,
+    service_id: validServiceId,
+    before_image: normalizeGoogleDriveUrl(project.before_image),
+    after_image: normalizeGoogleDriveUrl(project.after_image),
+    gallery_images: Array.isArray(project.gallery_images)
+      ? project.gallery_images.map(normalizeGoogleDriveUrl)
+      : [],
   };
 
   if (supabase) {
     const { data, error } = await supabase
       .from('portfolio_projects')
-      .insert(project)
+      .insert(cleanedProject)
       .select()
       .single();
-    if (!error && data) return data as PortfolioProject;
+    if (error) {
+      console.error('Supabase createProject error:', error.message, error.details);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (data) return data as PortfolioProject;
   }
 
+  const newProject: PortfolioProject = {
+    ...cleanedProject,
+    id: 'proj-' + Math.random().toString(36).substring(2, 9),
+    created_at: now,
+    updated_at: now,
+  };
   memoryProjects.unshift(newProject);
   return newProject;
 }
 
 export async function updateProject(id: string, updates: Partial<PortfolioProject>): Promise<PortfolioProject | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
+
+  const cleanedUpdates: Record<string, unknown> = { ...updates };
+  delete cleanedUpdates.id;
+  delete cleanedUpdates.created_at;
+  delete cleanedUpdates.updated_at;
+
+  if (cleanedUpdates.service_id !== undefined) {
+    cleanedUpdates.service_id = cleanedUpdates.service_id && (cleanedUpdates.service_id as string).length > 20
+      ? cleanedUpdates.service_id
+      : null;
+  }
+  if (typeof cleanedUpdates.before_image === 'string') {
+    cleanedUpdates.before_image = normalizeGoogleDriveUrl(cleanedUpdates.before_image);
+  }
+  if (typeof cleanedUpdates.after_image === 'string') {
+    cleanedUpdates.after_image = normalizeGoogleDriveUrl(cleanedUpdates.after_image);
+  }
+  if (Array.isArray(cleanedUpdates.gallery_images)) {
+    cleanedUpdates.gallery_images = cleanedUpdates.gallery_images.map(normalizeGoogleDriveUrl);
+  }
+
   if (supabase) {
     const { data, error } = await supabase
       .from('portfolio_projects')
-      .update(updates)
+      .update(cleanedUpdates)
       .eq('id', id)
       .select()
       .single();
-    if (!error && data) return data as PortfolioProject;
+    if (error) {
+      console.error('Supabase updateProject error:', error.message, error.details);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (data) return data as PortfolioProject;
   }
+
   const index = memoryProjects.findIndex(p => p.id === id);
   if (index !== -1) {
-    memoryProjects[index] = { ...memoryProjects[index], ...updates, updated_at: new Date().toISOString() };
+    memoryProjects[index] = { ...memoryProjects[index], ...cleanedUpdates, updated_at: new Date().toISOString() };
     return memoryProjects[index];
   }
   return null;
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { error } = await supabase
       .from('portfolio_projects')
       .delete()
       .eq('id', id);
-    if (!error) return true;
+    if (error) {
+      console.error('Supabase deleteProject error:', error.message, error.details);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    return true;
   }
   const index = memoryProjects.findIndex(p => p.id === id);
   if (index !== -1) {
@@ -238,55 +294,83 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
 }
 
 export async function createInventoryItem(item: Omit<InventoryItem, 'id' | 'created_at' | 'updated_at'>): Promise<InventoryItem> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   const now = new Date().toISOString();
-  const newItem: InventoryItem = {
+  const validCategoryId = item.category_id && item.category_id.length > 20 ? item.category_id : null;
+  const cleanedItem = {
     ...item,
-    id: 'inv-' + Math.random().toString(36).substring(2, 9),
-    created_at: now,
-    updated_at: now,
+    category_id: validCategoryId,
   };
 
   if (supabase) {
     const { data, error } = await supabase
       .from('inventory_items')
-      .insert(item)
+      .insert(cleanedItem)
       .select()
       .single();
-    if (!error && data) return data as InventoryItem;
+    if (error) {
+      console.error('Supabase createInventoryItem error:', error.message);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (data) return data as InventoryItem;
   }
 
+  const newItem: InventoryItem = {
+    ...cleanedItem,
+    id: 'inv-' + Math.random().toString(36).substring(2, 9),
+    created_at: now,
+    updated_at: now,
+  };
   memoryInventory.unshift(newItem);
   return newItem;
 }
 
 export async function updateInventoryItem(id: string, updates: Partial<InventoryItem>): Promise<InventoryItem | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
+  const cleanedUpdates: Record<string, unknown> = { ...updates };
+  delete cleanedUpdates.id;
+  delete cleanedUpdates.created_at;
+  delete cleanedUpdates.updated_at;
+
+  if (cleanedUpdates.category_id !== undefined) {
+    cleanedUpdates.category_id = cleanedUpdates.category_id && (cleanedUpdates.category_id as string).length > 20
+      ? cleanedUpdates.category_id
+      : null;
+  }
+
   if (supabase) {
     const { data, error } = await supabase
       .from('inventory_items')
-      .update(updates)
+      .update(cleanedUpdates)
       .eq('id', id)
       .select()
       .single();
-    if (!error && data) return data as InventoryItem;
+    if (error) {
+      console.error('Supabase updateInventoryItem error:', error.message);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (data) return data as InventoryItem;
   }
   const index = memoryInventory.findIndex(i => i.id === id);
   if (index !== -1) {
-    memoryInventory[index] = { ...memoryInventory[index], ...updates, updated_at: new Date().toISOString() };
+    memoryInventory[index] = { ...memoryInventory[index], ...cleanedUpdates, updated_at: new Date().toISOString() };
     return memoryInventory[index];
   }
   return null;
 }
 
 export async function deleteInventoryItem(id: string): Promise<boolean> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { error } = await supabase
       .from('inventory_items')
       .delete()
       .eq('id', id);
-    if (!error) return true;
+    if (error) {
+      console.error('Supabase deleteInventoryItem error:', error.message);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    return true;
   }
   const index = memoryInventory.findIndex(i => i.id === id);
   if (index !== -1) {
@@ -297,7 +381,7 @@ export async function deleteInventoryItem(id: string): Promise<boolean> {
 }
 
 export async function getInventoryTransactions(): Promise<InventoryTransaction[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('inventory_transactions')
@@ -359,7 +443,7 @@ export async function executeStockChange(
   memoryTransactions.unshift(tx);
 
   // If Supabase is available, sync to database
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     try {
       await supabase.from('inventory_items').update({ quantity: newQty, updated_at: now }).eq('id', itemId);
@@ -383,7 +467,7 @@ export async function executeStockChange(
 // CONTACT ENQUIRIES REPOSITORY
 // ==========================================
 export async function getEnquiries(): Promise<ContactMessage[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('contact_messages')
@@ -395,7 +479,7 @@ export async function getEnquiries(): Promise<ContactMessage[]> {
 }
 
 export async function saveContactMessage(msg: Omit<ContactMessage, 'id' | 'created_at' | 'updated_at'>): Promise<ContactMessage> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   const newMsg: ContactMessage = {
     ...msg,
     id: 'msg-' + Math.random().toString(36).substring(2, 9),
@@ -433,7 +517,7 @@ export async function updateEnquiryStatus(id: string, status: EnquiryStatus, int
 // SITE SETTINGS REPOSITORY (GOOGLE REVIEWS & CONFIG)
 // ==========================================
 export async function getGoogleReviewSettings(): Promise<{ url: string; is_enabled: boolean; label_en: string; label_ar: string }> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('site_settings')
@@ -454,7 +538,7 @@ export async function updateGoogleReviewSettings(settings: { url: string; is_ena
   };
   memorySettings.google_review_url = updated;
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { error } = await supabase
       .from('site_settings')

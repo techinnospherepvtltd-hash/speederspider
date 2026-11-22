@@ -5,6 +5,7 @@ import {
   updateProject,
   deleteProject,
 } from '@/lib/data/db';
+import { normalizeGoogleDriveUrl } from '@/lib/utils';
 import { z } from 'zod';
 
 const projectSchema = z.object({
@@ -35,15 +36,27 @@ export async function GET() {
   try {
     const projects = await getAllProjectsAdmin();
     return NextResponse.json({ success: true, projects });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to get portfolio projects:', error);
-    return NextResponse.json({ success: false, message: 'Failed to fetch projects' }, { status: 500 });
+    return NextResponse.json({ success: false, message: error?.message || 'Failed to fetch projects' }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.json();
+    const body = {
+      ...rawBody,
+      service_id: rawBody.service_id && typeof rawBody.service_id === 'string' && rawBody.service_id.length > 20
+        ? rawBody.service_id
+        : null,
+      before_image: normalizeGoogleDriveUrl(rawBody.before_image),
+      after_image: normalizeGoogleDriveUrl(rawBody.after_image),
+      gallery_images: Array.isArray(rawBody.gallery_images)
+        ? rawBody.gallery_images.map(normalizeGoogleDriveUrl)
+        : [],
+    };
+
     const parsed = projectSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -54,9 +67,9 @@ export async function POST(req: NextRequest) {
 
     const newProject = await createProject(parsed.data as any);
     return NextResponse.json({ success: true, project: newProject });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create project:', error);
-    return NextResponse.json({ success: false, message: 'Failed to create project' }, { status: 500 });
+    return NextResponse.json({ success: false, message: error?.message || 'Failed to create project' }, { status: 500 });
   }
 }
 
@@ -68,15 +81,30 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Project ID is required' }, { status: 400 });
     }
 
+    if ('service_id' in updates) {
+      updates.service_id = updates.service_id && typeof updates.service_id === 'string' && updates.service_id.length > 20
+        ? updates.service_id
+        : null;
+    }
+    if (updates.before_image) {
+      updates.before_image = normalizeGoogleDriveUrl(updates.before_image);
+    }
+    if (updates.after_image) {
+      updates.after_image = normalizeGoogleDriveUrl(updates.after_image);
+    }
+    if (Array.isArray(updates.gallery_images)) {
+      updates.gallery_images = updates.gallery_images.map(normalizeGoogleDriveUrl);
+    }
+
     const updated = await updateProject(id, updates);
     if (!updated) {
       return NextResponse.json({ success: false, message: 'Project not found' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, project: updated });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update project:', error);
-    return NextResponse.json({ success: false, message: 'Failed to update project' }, { status: 500 });
+    return NextResponse.json({ success: false, message: error?.message || 'Failed to update project' }, { status: 500 });
   }
 }
 
@@ -90,8 +118,8 @@ export async function DELETE(req: NextRequest) {
 
     const success = await deleteProject(id);
     return NextResponse.json({ success });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete project:', error);
-    return NextResponse.json({ success: false, message: 'Failed to delete project' }, { status: 500 });
+    return NextResponse.json({ success: false, message: error?.message || 'Failed to delete project' }, { status: 500 });
   }
 }
