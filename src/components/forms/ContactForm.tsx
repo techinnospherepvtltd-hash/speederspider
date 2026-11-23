@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language, ServiceItem } from '@/types';
-import { Send, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/SocialIcons';
 
 interface ContactFormProps {
   lang: Language;
@@ -221,9 +222,9 @@ export function ContactForm({ lang, services, preselectedServiceId }: ContactFor
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="flex items-center gap-2 text-xs font-semibold text-[#25D366] hover:text-[#20ba5a] transition-colors"
             >
-              <MessageSquare className="w-4 h-4" />
+              <WhatsAppIcon className="w-4 h-4 fill-current" />
               <span>{isRtl ? 'أو تواصل فوراً عبر واتساب (0565694440)' : 'Or chat instantly via WhatsApp (0565694440)'}</span>
             </a>
           </div>

@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 import { getProjectBySlug } from '@/lib/data/db';
 import { Language } from '@/types';
 import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
-import { MessageSquare, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/SocialIcons';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -124,9 +125,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)] shrink-0"
+          className="flex items-center gap-2 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white bg-[#25D366] hover:bg-[#20ba5a] rounded-lg transition-all shadow-[0_0_20px_rgba(37,211,102,0.4)] shrink-0"
         >
-          <MessageSquare className="w-4 h-4" />
+          <WhatsAppIcon className="w-4 h-4 fill-current" />
           <span>{isRtl ? 'استفسار فوري عبر واتساب' : 'Inquire on WhatsApp'}</span>
         </a>
       </div>

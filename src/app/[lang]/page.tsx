@@ -8,7 +8,8 @@ import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
 import { WorkshopMap } from '@/components/automotive/WorkshopMap';
 import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 import { CinematicHero } from '@/components/home/CinematicHero';
-import { ArrowRight, ArrowLeft, Shield, Sparkles, Sun, Zap, Cpu, Radio, Wrench, MessageSquare, CheckCircle, Star } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/SocialIcons';
+import { ArrowRight, ArrowLeft, Shield, Sparkles, Sun, Zap, Cpu, Radio, Wrench, CheckCircle, Star } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -461,9 +462,9 @@ export default async function HomePage({ params }: HomePageProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)]"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider text-white bg-[#25D366] hover:bg-[#20ba5a] rounded-lg transition-all shadow-[0_0_20px_rgba(37,211,102,0.4)]"
             >
-              <MessageSquare className="w-5 h-5 fill-current" />
+              <WhatsAppIcon className="w-5 h-5 fill-current" />
               <span>{isRtl ? 'محادثة عبر واتساب (0565694440)' : 'WhatsApp Direct (0565694440)'}</span>
             </a>
 

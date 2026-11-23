@@ -3,7 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { MapPin, Phone, MessageSquare, ShieldAlert, ArrowUpRight } from 'lucide-react';
+import { MapPin, ShieldAlert, ArrowUpRight } from 'lucide-react';
+import { WhatsAppIcon, InstagramIcon, FacebookIcon, CallingIcon } from '@/components/icons/SocialIcons';
 import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 
 interface FooterProps {
@@ -54,34 +55,45 @@ export function Footer({ lang, googleReviewUrl }: FooterProps) {
               <GoogleReviewButton lang={lang} reviewUrl={googleReviewUrl} />
             </div>
 
-            {/* Social Media Links */}
-            <div className="flex items-center gap-3 pt-3">
+            {/* Social Media Links & Calling with Authentic Logos */}
+            <div className="flex items-center gap-2.5 pt-3">
               <a
                 href="https://www.instagram.com/dsusvip?bqrl=MWw5YnQ5YmdqYWowbg=="
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-brand-amber hover:border-brand-amber transition-colors"
-                title="SpeederSpider Instagram"
+                className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-white hover:border-[#E1306C] hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] shadow-md transition-all hover:scale-105 active:scale-95"
+                title="SpeederSpider Instagram (@dsusvip)"
+                aria-label="SpeederSpider Instagram"
               >
-                <span className="text-xs font-bold font-mono">IG</span>
+                <InstagramIcon className="w-5 h-5 fill-current" />
               </a>
               <a
                 href="https://www.facebook.com/share/1EFvDZmQN6/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-brand-cyan hover:border-brand-cyan transition-colors"
+                className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-white hover:border-[#1877F2] hover:bg-[#1877F2] shadow-md transition-all hover:scale-105 active:scale-95"
                 title="SpeederSpider Facebook"
+                aria-label="SpeederSpider Facebook"
               >
-                <span className="text-xs font-bold font-mono">FB</span>
+                <FacebookIcon className="w-5 h-5 fill-current" />
               </a>
               <a
                 href="https://wa.me/971565694440"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-emerald-400 hover:border-emerald-400 transition-colors"
-                title="WhatsApp Direct"
+                className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-white hover:border-[#25D366] hover:bg-[#25D366] shadow-md transition-all hover:scale-105 active:scale-95"
+                title="WhatsApp Direct (+971 56 569 4440)"
+                aria-label="SpeederSpider WhatsApp"
               >
-                <MessageSquare className="w-4 h-4" />
+                <WhatsAppIcon className="w-5 h-5 fill-current" />
+              </a>
+              <a
+                href="tel:+971565694440"
+                className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-white hover:border-emerald-500 hover:bg-emerald-600 shadow-md transition-all hover:scale-105 active:scale-95"
+                title="Call SpeederSpider Workshop (+971 56 569 4440)"
+                aria-label="Call SpeederSpider Workshop"
+              >
+                <CallingIcon className="w-5 h-5 fill-current" />
               </a>
             </div>
           </div>
@@ -159,21 +171,28 @@ export function Footer({ lang, googleReviewUrl }: FooterProps) {
             </div>
 
             <div className="flex items-center gap-3 text-sm pt-2">
-              <Phone className="w-5 h-5 text-brand-cyan shrink-0" />
-              <a href="tel:+971565694440" className="hover:text-brand-cyan transition-colors font-mono">
+              <CallingIcon className="w-5 h-5 text-emerald-400 shrink-0" />
+              <a href="tel:+971565694440" className="hover:text-emerald-400 transition-colors font-mono font-semibold">
                 +971 56 569 4440
               </a>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 flex flex-wrap gap-2.5">
               <a
                 href="https://wa.me/971565694440"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan rounded hover:bg-brand-cyan/90 transition-all shadow-[0_0_12px_rgba(91,192,222,0.3)]"
+                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#25D366] hover:bg-[#20ba5a] rounded-lg transition-all shadow-[0_0_12px_rgba(37,211,102,0.3)]"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
+                <WhatsAppIcon className="w-4 h-4 fill-current" />
                 <span>WhatsApp: 0565694440</span>
+              </a>
+              <a
+                href="tel:+971565694440"
+                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-brand-navy border border-brand-steelBlue/60 hover:border-brand-cyan hover:text-brand-cyan rounded-lg transition-all"
+              >
+                <CallingIcon className="w-3.5 h-3.5 fill-current" />
+                <span>{isRtl ? 'اتصال هاتف' : 'Call Workshop'}</span>
               </a>
             </div>
           </div>

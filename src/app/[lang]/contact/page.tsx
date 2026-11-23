@@ -6,7 +6,8 @@ import { getServices, getGoogleReviewSettings } from '@/lib/data/db';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { WorkshopMap } from '@/components/automotive/WorkshopMap';
 import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
-import { MapPin, Phone, MessageSquare, Clock } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
+import { WhatsAppIcon, CallingIcon } from '@/components/icons/SocialIcons';
 
 interface ContactPageProps {
   params: Promise<{ lang: string }>;
@@ -95,8 +96,8 @@ export default async function ContactPage({ params }: ContactPageProps) {
 
             {/* WhatsApp */}
             <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan shrink-0">
-                <MessageSquare className="w-5 h-5" />
+              <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-[#25D366]/40 text-[#25D366] shrink-0">
+                <WhatsAppIcon className="w-5 h-5 fill-current" />
               </div>
               <div>
                 <p className="text-xs uppercase font-mono text-gray-400">WhatsApp</p>
@@ -104,7 +105,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-bold text-white hover:text-brand-cyan transition-colors font-mono"
+                  className="text-sm font-bold text-white hover:text-[#25D366] transition-colors font-mono"
                 >
                   0565694440
                 </a>
@@ -113,14 +114,14 @@ export default async function ContactPage({ params }: ContactPageProps) {
 
             {/* Telephone */}
             <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-brand-cyan/40 text-brand-cyan shrink-0">
-                <Phone className="w-5 h-5" />
+              <div className="p-2.5 rounded-lg bg-brand-deepNavy border border-emerald-500/40 text-emerald-400 shrink-0">
+                <CallingIcon className="w-5 h-5 fill-current" />
               </div>
               <div>
-                <p className="text-xs uppercase font-mono text-gray-400">Telephone</p>
+                <p className="text-xs uppercase font-mono text-gray-400">Telephone / Calling</p>
                 <a
                   href="tel:+971565694440"
-                  className="text-sm font-bold text-white hover:text-brand-cyan transition-colors font-mono"
+                  className="text-sm font-bold text-white hover:text-emerald-400 transition-colors font-mono"
                 >
                   +971 56 569 4440
                 </a>

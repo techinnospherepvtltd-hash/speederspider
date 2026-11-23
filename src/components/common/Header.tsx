@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { Menu, X, MessageSquare, Globe, ChevronDown } from 'lucide-react';
+import { Menu, X, Globe, ChevronDown } from 'lucide-react';
+import { WhatsAppIcon, CallingIcon } from '@/components/icons/SocialIcons';
 
 interface HeaderProps {
   lang: Language;
@@ -137,8 +138,18 @@ export function Header({ lang }: HeaderProps) {
             ))}
           </nav>
 
-          {/* Right Actions: Language Switcher & WhatsApp CTA */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Right Actions: Phone Call, Language Switcher & WhatsApp CTA */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Phone Call Link */}
+            <a
+              href="tel:+971565694440"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-gray-300 hover:text-white bg-brand-navy/60 hover:bg-brand-navy border border-brand-steelBlue/40 hover:border-brand-cyan/60 rounded-md transition-all font-mono"
+              title="Call SpeederSpider Workshop: +971 56 569 4440"
+            >
+              <CallingIcon className="w-3.5 h-3.5 text-brand-cyan" />
+              <span>056 569 4440</span>
+            </a>
+
             {/* Language Switcher */}
             <Link
               href={alternatePath}
@@ -154,10 +165,10 @@ export function Header({ lang }: HeaderProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 transition-all rounded-md shadow-[0_0_15px_rgba(91,192,222,0.4)]"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#25D366] hover:bg-[#20ba5a] transition-all rounded-md shadow-[0_0_15px_rgba(37,211,102,0.4)]"
             >
-              <MessageSquare className="w-4 h-4 fill-current" />
-              <span>{dict.nav.callUs}</span>
+              <WhatsAppIcon className="w-4 h-4 fill-current" />
+              <span>{isRtl ? 'واتساب' : 'WhatsApp'}</span>
             </a>
           </div>
 
@@ -206,15 +217,22 @@ export function Header({ lang }: HeaderProps) {
               ))}
             </nav>
 
-            <div className="pt-2">
+            <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3.5 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 transition-all rounded-lg shadow-[0_0_15px_rgba(91,192,222,0.4)]"
+                className="flex items-center justify-center gap-2 w-full py-3 text-xs font-bold uppercase tracking-wider text-white bg-[#25D366] hover:bg-[#20ba5a] transition-all rounded-lg shadow-[0_0_15px_rgba(37,211,102,0.3)]"
               >
-                <MessageSquare className="w-4 h-4 fill-current" />
-                <span>{dict.nav.callUs} (0565694440)</span>
+                <WhatsAppIcon className="w-4 h-4 fill-current" />
+                <span>WhatsApp (0565694440)</span>
+              </a>
+              <a
+                href="tel:+971565694440"
+                className="flex items-center justify-center gap-2 w-full py-3 text-xs font-bold uppercase tracking-wider text-white bg-brand-navy hover:bg-brand-steelBlue/40 border border-brand-steelBlue/60 hover:border-brand-cyan transition-all rounded-lg"
+              >
+                <CallingIcon className="w-4 h-4 text-emerald-400 fill-current" />
+                <span>{isRtl ? 'اتصال هاتف: 0565694440' : 'Call Us (0565694440)'}</span>
               </a>
             </div>
           </div>

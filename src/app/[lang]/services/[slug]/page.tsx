@@ -7,7 +7,8 @@ import { getServiceBySlug } from '@/lib/data/db';
 import { Language } from '@/types';
 import { dictionaries } from '@/lib/i18n/translations';
 import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
-import { MessageSquare, ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/SocialIcons';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -153,9 +154,9 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)]"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white bg-[#25D366] hover:bg-[#20ba5a] rounded-lg transition-all shadow-[0_0_20px_rgba(37,211,102,0.4)]"
             >
-              <MessageSquare className="w-4 h-4 fill-current" />
+              <WhatsAppIcon className="w-4 h-4 fill-current" />
               <span>{isRtl ? 'حجز موعد عبر واتساب' : 'Book on WhatsApp (0565694440)'}</span>
             </a>
 
