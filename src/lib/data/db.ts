@@ -42,6 +42,14 @@ let memorySettings: Record<string, Record<string, unknown>> = {
 // ==========================================
 // SERVICES REPOSITORY
 // ==========================================
+const formatService = (s: ServiceItem): ServiceItem => ({
+  ...s,
+  featured_image: normalizeGoogleDriveUrl(s.featured_image),
+  before_image: s.before_image ? normalizeGoogleDriveUrl(s.before_image) : null,
+  after_image: s.after_image ? normalizeGoogleDriveUrl(s.after_image) : null,
+  gallery_images: Array.isArray(s.gallery_images) ? s.gallery_images.map(normalizeGoogleDriveUrl) : [],
+});
+
 export async function getServices(): Promise<ServiceItem[]> {
   const supabase = await getDbClient();
   if (supabase) {
@@ -50,9 +58,9 @@ export async function getServices(): Promise<ServiceItem[]> {
       .select('*')
       .eq('is_published', true)
       .order('display_order', { ascending: true });
-    if (!error && data && data.length > 0) return data as ServiceItem[];
+    if (!error && data && data.length > 0) return (data as ServiceItem[]).map(formatService);
   }
-  return memoryServices.filter(s => s.is_published).sort((a, b) => a.display_order - b.display_order);
+  return memoryServices.filter(s => s.is_published).sort((a, b) => a.display_order - b.display_order).map(formatService);
 }
 
 export async function getAllServicesAdmin(): Promise<ServiceItem[]> {
@@ -62,9 +70,9 @@ export async function getAllServicesAdmin(): Promise<ServiceItem[]> {
       .from('services')
       .select('*')
       .order('display_order', { ascending: true });
-    if (!error && data) return data as ServiceItem[];
+    if (!error && data) return (data as ServiceItem[]).map(formatService);
   }
-  return memoryServices.sort((a, b) => a.display_order - b.display_order);
+  return memoryServices.sort((a, b) => a.display_order - b.display_order).map(formatService);
 }
 
 export async function getServiceBySlug(slug: string): Promise<ServiceItem | null> {
@@ -75,9 +83,10 @@ export async function getServiceBySlug(slug: string): Promise<ServiceItem | null
       .select('*')
       .or(`slug_en.eq.${slug},slug_ar.eq.${slug}`)
       .single();
-    if (!error && data) return data as ServiceItem;
+    if (!error && data) return formatService(data as ServiceItem);
   }
-  return memoryServices.find(s => s.slug_en === slug || s.slug_ar === slug) || null;
+  const found = memoryServices.find(s => s.slug_en === slug || s.slug_ar === slug);
+  return found ? formatService(found) : null;
 }
 
 export async function createServiceItem(service: Omit<ServiceItem, 'id' | 'created_at' | 'updated_at'>): Promise<ServiceItem> {
@@ -189,16 +198,25 @@ export async function deleteServiceItem(id: string): Promise<boolean> {
 // ==========================================
 // PORTFOLIO REPOSITORY
 // ==========================================
+const formatProject = (p: PortfolioProject): PortfolioProject => ({
+  ...p,
+  before_image: normalizeGoogleDriveUrl(p.before_image),
+  after_image: normalizeGoogleDriveUrl(p.after_image),
+  gallery_images: Array.isArray(p.gallery_images) ? p.gallery_images.map(normalizeGoogleDriveUrl) : [],
+  service: p.service ? formatService(p.service as ServiceItem) : p.service,
+});
+
 export async function getProjects(): Promise<PortfolioProject[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('portfolio_projects')
       .select('*, service:services(*)')
+      .eq('is_published', true)
       .order('display_order', { ascending: true });
-    if (!error && data && data.length > 0) return data as PortfolioProject[];
+    if (!error && data && data.length > 0) return (data as PortfolioProject[]).map(formatProject);
   }
-  return memoryProjects.filter(p => p.is_published).sort((a, b) => a.display_order - b.display_order);
+  return memoryProjects.filter(p => p.is_published).sort((a, b) => a.display_order - b.display_order).map(formatProject);
 }
 
 export async function getAllProjectsAdmin(): Promise<PortfolioProject[]> {
@@ -208,9 +226,9 @@ export async function getAllProjectsAdmin(): Promise<PortfolioProject[]> {
       .from('portfolio_projects')
       .select('*, service:services(*)')
       .order('display_order', { ascending: true });
-    if (!error && data) return data as PortfolioProject[];
+    if (!error && data) return (data as PortfolioProject[]).map(formatProject);
   }
-  return memoryProjects.sort((a, b) => a.display_order - b.display_order);
+  return memoryProjects.sort((a, b) => a.display_order - b.display_order).map(formatProject);
 }
 
 export async function getFeaturedProjects(): Promise<PortfolioProject[]> {
@@ -226,9 +244,10 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioProject |
       .select('*, service:services(*)')
       .eq('slug', slug)
       .single();
-    if (!error && data) return data as PortfolioProject;
+    if (!error && data) return formatProject(data as PortfolioProject);
   }
-  return memoryProjects.find(p => p.slug === slug) || null;
+  const found = memoryProjects.find(p => p.slug === slug);
+  return found ? formatProject(found) : null;
 }
 
 export async function createProject(project: Omit<PortfolioProject, 'id' | 'created_at' | 'updated_at'>): Promise<PortfolioProject> {

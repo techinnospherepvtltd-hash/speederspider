@@ -6,6 +6,9 @@ import { Language } from '@/types';
 import { getProjects } from '@/lib/data/db';
 import { ArrowRight, ArrowLeft, Wrench } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface PortfolioPageProps {
   params: Promise<{ lang: string }>;
 }
@@ -45,6 +48,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                unoptimized={project.after_image?.includes('google') || project.after_image?.includes('lh3')}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/30 to-transparent" />
               {project.vehicle_make && (

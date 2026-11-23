@@ -7,6 +7,9 @@ import { Language } from '@/types';
 import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
 import { MessageSquare, ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface ProjectDetailPageProps {
   params: Promise<{ lang: string; slug: string }>;
 }

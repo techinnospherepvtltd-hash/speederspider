@@ -10,6 +10,9 @@ import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 import { CinematicHero } from '@/components/home/CinematicHero';
 import { ArrowRight, ArrowLeft, Shield, Sparkles, Sun, Zap, Cpu, Radio, Wrench, MessageSquare, CheckCircle, Star } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface HomePageProps {
   params: Promise<{ lang: string }>;
 }
@@ -143,6 +146,7 @@ export default async function HomePage({ params }: HomePageProps) {
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      unoptimized={service.featured_image?.includes('google') || service.featured_image?.includes('lh3')}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/40 to-transparent" />
                     <div className="absolute top-4 left-4 p-2.5 rounded-lg bg-brand-deepNavy/80 backdrop-blur-md border border-brand-steelBlue/50">
@@ -258,6 +262,7 @@ export default async function HomePage({ params }: HomePageProps) {
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    unoptimized={project.after_image?.includes('google') || project.after_image?.includes('lh3')}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/30 to-transparent" />
                   {project.vehicle_make && (

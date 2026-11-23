@@ -9,6 +9,9 @@ import { dictionaries } from '@/lib/i18n/translations';
 import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
 import { MessageSquare, ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Sparkles, SlidersHorizontal } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface ServiceDetailPageProps {
   params: Promise<{ lang: string; slug: string }>;
 }
@@ -174,6 +177,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
             priority
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+            unoptimized={service.featured_image?.includes('google') || service.featured_image?.includes('lh3')}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-deepNavy via-transparent to-transparent opacity-60" />
         </div>

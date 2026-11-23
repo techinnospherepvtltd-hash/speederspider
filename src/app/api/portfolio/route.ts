@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import {
   getAllProjectsAdmin,
   createProject,
@@ -66,6 +67,11 @@ export async function POST(req: NextRequest) {
     }
 
     const newProject = await createProject(parsed.data as any);
+    try {
+      revalidatePath('/[lang]/our-work', 'page');
+      revalidatePath('/[lang]', 'page');
+      revalidatePath('/[lang]/our-work/[slug]', 'page');
+    } catch {}
     return NextResponse.json({ success: true, project: newProject });
   } catch (error: any) {
     console.error('Failed to create project:', error);
@@ -101,6 +107,12 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Project not found' }, { status: 404 });
     }
 
+    try {
+      revalidatePath('/[lang]/our-work', 'page');
+      revalidatePath('/[lang]', 'page');
+      revalidatePath('/[lang]/our-work/[slug]', 'page');
+    } catch {}
+
     return NextResponse.json({ success: true, project: updated });
   } catch (error: any) {
     console.error('Failed to update project:', error);
@@ -117,6 +129,11 @@ export async function DELETE(req: NextRequest) {
     }
 
     const success = await deleteProject(id);
+    try {
+      revalidatePath('/[lang]/our-work', 'page');
+      revalidatePath('/[lang]', 'page');
+      revalidatePath('/[lang]/our-work/[slug]', 'page');
+    } catch {}
     return NextResponse.json({ success });
   } catch (error: any) {
     console.error('Failed to delete project:', error);
