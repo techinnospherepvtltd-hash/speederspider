@@ -154,21 +154,23 @@
 
 .background-title {
   position: absolute;
-  top: 10.5%;
+  top: 7%;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
   text-align: center;
   white-space: nowrap;
 
-  font-family: 'Russo One', 'Barlow Condensed', sans-serif;
-  font-size: clamp(130px, 21vw, 300px);
+  font-family: 'Barlow Condensed', 'Oswald', 'Russo One', sans-serif;
+  font-size: clamp(120px, 18vw, 250px);
   font-weight: 900;
   line-height: 0.9;
-  letter-spacing: -8px;
+  letter-spacing: clamp(12px, 2.5vw, 32px);
+  word-spacing: clamp(35px, 5vw, 75px);
+  text-transform: uppercase;
 
   color: rgba(244, 214, 176, 0.12);
-  -webkit-text-stroke: 1px rgba(91, 192, 222, 0.35);
+  -webkit-text-stroke: 1.5px rgba(91, 192, 222, 0.4);
 
   z-index: 1;
   pointer-events: none;
@@ -181,7 +183,7 @@
   letter-spacing: 6px;
   color: rgba(91, 192, 222, 0.4);
   font-weight: 700;
-  margin-top: -6px;
+  margin-top: 2px;
 }
 
 @keyframes titleReveal {
@@ -201,13 +203,13 @@
   position: absolute;
   z-index: 2;
 
-  /* Positioned so the upper half (~50%) of the background text is clearly visible */
-  top: 21%;
+  /* Positioned lower so that 75% of the background text remains clearly visible */
+  top: 28%;
   left: 50%;
   transform: translateX(-50%);
 
   /* Reduced car size for refined proportions, text exposure and generous CTA clearance */
-  width: min(73%, 860px);
+  width: min(72%, 820px);
 }
 
 .car-wrapper img {
@@ -427,13 +429,15 @@
 
 @media (max-width: 1024px) {
   .background-title {
-    top: 11%;
-    font-size: clamp(90px, 15vw, 170px);
+    top: 8%;
+    font-size: clamp(90px, 14vw, 160px);
+    letter-spacing: clamp(8px, 1.8vw, 18px);
+    word-spacing: clamp(25px, 4vw, 45px);
   }
 
   .car-wrapper {
-    top: 20%;
-    width: min(76%, 660px);
+    top: 28%;
+    width: min(75%, 640px);
   }
 
   .hero-heading {
@@ -486,7 +490,7 @@
     position: relative;
     inset: auto;
     width: 100%;
-    height: clamp(200px, 28vh, 235px);
+    height: clamp(230px, 32vh, 270px);
     margin-top: 6px;
     z-index: 2;
   }
@@ -501,27 +505,28 @@
   }
 
   .background-title {
-    /* Positioned near the top of the stage so ~50% is visible above the car */
-    top: 10px;
+    /* Positioned near the top so 75% is visible above the car */
+    top: 6px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: clamp(72px, 20vw, 100px);
-    letter-spacing: -3px;
+    font-size: clamp(68px, 17vw, 92px);
+    letter-spacing: clamp(4px, 1.2vw, 8px);
+    word-spacing: 16px;
     line-height: 0.88;
   }
 
   .background-subtitle {
     font-size: 10px;
     letter-spacing: 3px;
-    margin-top: -3px;
+    margin-top: 2px;
   }
 
   .car-wrapper {
-    /* Scaled and positioned so the roofline cuts across the mid-height of NEW ERA */
-    top: 48px;
+    /* Lowered so that 75% of NEW ERA remains clearly visible above the roofline */
+    top: 65px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(84%, 350px);
+    width: min(84%, 340px);
   }
 
   .car-shadow {
@@ -606,19 +611,20 @@
   }
 
   .hero-stage {
-    height: clamp(180px, 25vh, 205px);
+    height: clamp(210px, 28vh, 240px);
     margin-top: 4px;
   }
 
   .background-title {
-    top: 8px;
-    font-size: clamp(62px, 18.5vw, 80px);
-    letter-spacing: -2px;
+    top: 4px;
+    font-size: clamp(58px, 16vw, 76px);
+    letter-spacing: 3px;
+    word-spacing: 14px;
   }
 
   .car-wrapper {
-    top: 40px;
-    width: min(86%, 305px);
+    top: 55px;
+    width: min(86%, 295px);
   }
 
   .hero-bottom {
