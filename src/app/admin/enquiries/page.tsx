@@ -199,10 +199,22 @@ export default function AdminEnquiriesPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <select
+                value={enq.status}
+                disabled={isSaving}
+                onChange={(e) => updateStatus(enq.id, e.target.value as EnquiryStatus)}
+                className="px-2.5 py-1.5 rounded-lg bg-brand-deepNavy border border-brand-steelBlue/60 text-xs font-mono text-brand-cyan focus:outline-none focus:border-brand-cyan cursor-pointer"
+              >
+                <option value="new">Status: New</option>
+                <option value="in_progress">Status: In Progress</option>
+                <option value="contacted">Status: Contacted</option>
+                <option value="completed">Status: Completed</option>
+                <option value="archived">Status: Archived</option>
+              </select>
+
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   setSelectedEnquiry(enq);
                   setNoteInput(enq.internal_notes || '');
                 }}

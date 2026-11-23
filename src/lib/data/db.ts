@@ -798,16 +798,24 @@ export async function saveContactMessage(msg: Omit<ContactMessage, 'id' | 'creat
 
 export async function updateEnquiryStatus(id: string, status: EnquiryStatus, internalNotes?: string): Promise<boolean> {
   const supabase = await getDbClient();
+  let updatedInDb = false;
+
   if (supabase) {
     const updateData: any = { status, updated_at: new Date().toISOString() };
     if (internalNotes !== undefined) {
       updateData.internal_notes = internalNotes;
     }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('contact_messages')
       .update(updateData)
-      .eq('id', id);
-    if (error) console.error('Supabase update enquiry status error:', error);
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Supabase update enquiry status error:', error);
+    } else if (data && data.length > 0) {
+      updatedInDb = true;
+    }
   }
 
   const index = memoryEnquiries.findIndex(e => e.id === id);
@@ -819,7 +827,8 @@ export async function updateEnquiryStatus(id: string, status: EnquiryStatus, int
     memoryEnquiries[index].updated_at = new Date().toISOString();
     return true;
   }
-  return false;
+
+  return updatedInDb;
 }
 
 // ==========================================

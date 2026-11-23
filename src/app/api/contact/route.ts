@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { saveContactMessage, getEnquiries, updateEnquiryStatus } from '@/lib/data/db';
 
@@ -145,7 +146,12 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, message: 'Enquiry updated successfully' });
+    try {
+      revalidatePath('/admin', 'page');
+      revalidatePath('/admin/enquiries', 'page');
+    } catch (e) {}
+
+    return NextResponse.json({ success: true, message: 'Enquiry updated successfully', status });
   } catch (err: any) {
     console.error('Error updating enquiry:', err);
     return NextResponse.json(
