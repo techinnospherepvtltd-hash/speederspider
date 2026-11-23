@@ -51,8 +51,26 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.json();
+
+    const title_en = rawBody.title_en?.trim() || '';
+    const title_ar = rawBody.title_ar?.trim() || title_en;
+    const slug_en = (rawBody.slug_en?.trim() || title_en.toLowerCase().replace(/[^a-z0-9]+/g, '-')).replace(/^-+|-+$/g, '') || 'service-' + Date.now();
+    const slug_ar = rawBody.slug_ar?.trim() || slug_en;
+    const short_desc_en = rawBody.short_desc_en?.trim() || title_en;
+    const short_desc_ar = rawBody.short_desc_ar?.trim() || short_desc_en;
+    const description_en = rawBody.description_en?.trim() || short_desc_en;
+    const description_ar = rawBody.description_ar?.trim() || description_en;
+
     const body = {
       ...rawBody,
+      title_en,
+      title_ar,
+      slug_en,
+      slug_ar,
+      short_desc_en,
+      short_desc_ar,
+      description_en,
+      description_ar,
       featured_image: normalizeGoogleDriveUrl(rawBody.featured_image),
       before_image: rawBody.before_image && rawBody.before_image.trim() !== ''
         ? normalizeGoogleDriveUrl(rawBody.before_image)

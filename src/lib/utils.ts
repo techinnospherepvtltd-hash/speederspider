@@ -28,21 +28,32 @@ export function formatDate(dateStr: string, locale: string = 'en-US'): string {
 
 /**
  * Automatically converts Google Drive share URLs into direct, high-speed CDN image URLs.
- * Example input:  https://drive.google.com/file/d/1d8Lnri1HNvfNGWpLY8b0tOKKr8lwFsMx/view?usp=sharing
- * Example output: https://lh3.googleusercontent.com/d/1d8Lnri1HNvfNGWpLY8b0tOKKr8lwFsMx
+ * Supports:
+ * - https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing
+ * - https://drive.google.com/file/d/{FILE_ID}/view
+ * - https://drive.google.com/open?id={FILE_ID}
+ * - https://drive.google.com/uc?id={FILE_ID}
+ * - https://drive.google.com/d/{FILE_ID}
+ * - Raw Google Drive File IDs (25-50 characters)
+ * Output: https://lh3.googleusercontent.com/d/{FILE_ID}
  */
 export function normalizeGoogleDriveUrl(url: string | null | undefined): string {
   if (!url) return '';
   const trimmed = url.trim();
 
-  // Match /file/d/{FILE_ID} pattern
-  const fileDMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  // 1. Direct raw Google Drive file ID (alphanumeric, underscores, hyphens, 25-55 chars)
+  if (/^[a-zA-Z0-9_-]{25,55}$/.test(trimmed)) {
+    return `https://lh3.googleusercontent.com/d/${trimmed}`;
+  }
+
+  // 2. Match /d/{FILE_ID} or /file/d/{FILE_ID} or /u/{num}/d/{FILE_ID} pattern
+  const fileDMatch = trimmed.match(/\/d\/([a-zA-Z0-9_-]{20,55})/);
   if (fileDMatch && fileDMatch[1]) {
     return `https://lh3.googleusercontent.com/d/${fileDMatch[1]}`;
   }
 
-  // Match id={FILE_ID} query parameter pattern
-  const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  // 3. Match id={FILE_ID} query parameter pattern
+  const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]{20,55})/);
   if (idMatch && idMatch[1]) {
     return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
   }

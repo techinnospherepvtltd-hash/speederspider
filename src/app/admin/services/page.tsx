@@ -394,12 +394,12 @@ export default function AdminServicesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">
-                    Slug (Arabic URL) <span className="text-brand-cyan">*</span>
+                    Slug (Arabic URL)
                   </label>
                   <input
                     type="text"
-                    required
                     value={formData.slug_ar}
+                    placeholder="Defaults to English slug if empty"
                     onChange={(e) => setFormData({ ...formData, slug_ar: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs font-mono text-white focus:outline-none focus:border-brand-cyan"
                   />
@@ -422,12 +422,12 @@ export default function AdminServicesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">
-                    Title (Arabic) <span className="text-brand-cyan">*</span>
+                    Title (Arabic)
                   </label>
                   <input
                     type="text"
-                    required
                     dir="rtl"
+                    placeholder="افتراضي: نفس العنوان الإنجليزي"
                     value={formData.title_ar}
                     onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-sm text-white text-right font-arabic focus:outline-none focus:border-brand-cyan"
@@ -451,12 +451,12 @@ export default function AdminServicesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">
-                    Short Summary (Arabic) <span className="text-brand-cyan">*</span>
+                    Short Summary (Arabic)
                   </label>
                   <textarea
                     rows={2}
-                    required
                     dir="rtl"
+                    placeholder="افتراضي: نفس الوصف الإنجليزي"
                     value={formData.short_desc_ar}
                     onChange={(e) => setFormData({ ...formData, short_desc_ar: e.target.value })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs text-white text-right font-arabic focus:outline-none focus:border-brand-cyan"
@@ -480,12 +480,12 @@ export default function AdminServicesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">
-                    Full Description (Arabic) <span className="text-brand-cyan">*</span>
+                    Full Description (Arabic)
                   </label>
                   <textarea
                     rows={4}
-                    required
                     dir="rtl"
+                    placeholder="افتراضي: نفس الوصف الإنجليزي الكامل"
                     value={formData.description_ar}
                     onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs text-white text-right font-arabic focus:outline-none focus:border-brand-cyan"
@@ -502,7 +502,7 @@ export default function AdminServicesPage() {
                   <span className="text-[10px] font-mono text-brand-cyan/80">Drive links supported</span>
                 </div>
                 <input
-                  type="url"
+                  type="text"
                   required
                   placeholder="https://... or Google Drive share link"
                   value={formData.featured_image}
@@ -548,7 +548,7 @@ export default function AdminServicesPage() {
                       )}
                     </div>
                     <input
-                      type="url"
+                      type="text"
                       placeholder="https://... or Google Drive share link"
                       value={formData.before_image || ''}
                       onChange={(e) => setFormData({ ...formData, before_image: normalizeGoogleDriveUrl(e.target.value) })}
@@ -597,7 +597,7 @@ export default function AdminServicesPage() {
                       )}
                     </div>
                     <input
-                      type="url"
+                      type="text"
                       placeholder="https://... or Google Drive share link"
                       value={formData.after_image || ''}
                       onChange={(e) => setFormData({ ...formData, after_image: normalizeGoogleDriveUrl(e.target.value) })}
@@ -738,8 +738,8 @@ export default function AdminServicesPage() {
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">Slug (Arabic URL)</label>
                   <input
                     type="text"
-                    required
                     value={editingService.slug_ar}
+                    placeholder="Defaults to English slug if empty"
                     onChange={(e) => setEditingService({ ...editingService, slug_ar: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs font-mono text-white focus:outline-none focus:border-brand-cyan"
                   />
@@ -762,8 +762,8 @@ export default function AdminServicesPage() {
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">Title (Arabic)</label>
                   <input
                     type="text"
-                    required
                     dir="rtl"
+                    placeholder="افتراضي: نفس العنوان الإنجليزي"
                     value={editingService.title_ar}
                     onChange={(e) => setEditingService({ ...editingService, title_ar: e.target.value })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-sm text-white text-right font-arabic focus:outline-none focus:border-brand-cyan"
@@ -787,8 +787,8 @@ export default function AdminServicesPage() {
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">Short Summary (Arabic)</label>
                   <textarea
                     rows={2}
-                    required
                     dir="rtl"
+                    placeholder="افتراضي: نفس الوصف الإنجليزي"
                     value={editingService.short_desc_ar}
                     onChange={(e) => setEditingService({ ...editingService, short_desc_ar: e.target.value })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs text-white text-right font-arabic focus:outline-none focus:border-brand-cyan"
@@ -812,8 +812,8 @@ export default function AdminServicesPage() {
                   <label className="block text-xs font-mono uppercase text-gray-300 mb-1">Full Description (Arabic)</label>
                   <textarea
                     rows={4}
-                    required
                     dir="rtl"
+                    placeholder="افتراضي: نفس الوصف الإنجليزي الكامل"
                     value={editingService.description_ar}
                     onChange={(e) => setEditingService({ ...editingService, description_ar: e.target.value })}
                     className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded text-xs text-white text-right font-arabic focus:outline-none focus:border-brand-cyan"
@@ -828,7 +828,7 @@ export default function AdminServicesPage() {
                   <span className="text-[10px] font-mono text-brand-cyan/80">Drive links supported</span>
                 </div>
                 <input
-                  type="url"
+                  type="text"
                   required
                   placeholder="https://... or Google Drive share link"
                   value={editingService.featured_image}
@@ -874,7 +874,7 @@ export default function AdminServicesPage() {
                       )}
                     </div>
                     <input
-                      type="url"
+                      type="text"
                       placeholder="https://... or Google Drive share link"
                       value={editingService.before_image || ''}
                       onChange={(e) => setEditingService({ ...editingService, before_image: normalizeGoogleDriveUrl(e.target.value) })}
@@ -923,7 +923,7 @@ export default function AdminServicesPage() {
                       )}
                     </div>
                     <input
-                      type="url"
+                      type="text"
                       placeholder="https://... or Google Drive share link"
                       value={editingService.after_image || ''}
                       onChange={(e) => setEditingService({ ...editingService, after_image: normalizeGoogleDriveUrl(e.target.value) })}
