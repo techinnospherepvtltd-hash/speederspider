@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -23,6 +23,24 @@ export function Header({ lang }: HeaderProps) {
   // Compute alternate path
   const alternatePath = pathname.replace(`/${lang}`, `/${otherLang}`);
 
+  // Auto-close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+    if (mobileMenuOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const whatsappMessage =
     lang === 'ar'
       ? encodeURIComponent("مرحباً SpeederSpider! زرت موقعكم الإلكتروني وأرغب في الاستفسار عن خدمات السيارات.")
@@ -38,7 +56,7 @@ export function Header({ lang }: HeaderProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-brand-deepNavy/90 backdrop-blur-md border-b border-brand-steelBlue/30 transition-all">
+    <header className="sticky top-0 z-50 w-full bg-brand-deepNavy/90 backdrop-blur-md border-b border-brand-steelBlue/30 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Brand Logo */}
@@ -162,31 +180,45 @@ export function Header({ lang }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Menu Overlay - positioned absolutely so it never shifts/pushes the page UI */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-brand-deepNavy border-b border-brand-steelBlue/40 px-4 pt-2 pb-6 space-y-3">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-gray-200 hover:text-brand-cyan border-b border-brand-steelBlue/20"
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="pt-2">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 text-sm font-bold uppercase text-brand-deepNavy bg-brand-cyan rounded-md"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>{dict.nav.callUs} (0565694440)</span>
-            </a>
+        <>
+          {/* Dimmed backdrop covering the screen below the header with blur */}
+          <div
+            className="md:hidden fixed inset-0 top-20 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Floating dropdown overlay panel */}
+          <div className="md:hidden absolute top-full left-0 right-0 w-full bg-brand-deepNavy/95 backdrop-blur-xl border-b border-brand-steelBlue/40 shadow-2xl z-50 px-6 py-6 space-y-4 animate-fadeInDown max-h-[calc(100vh-5rem)] overflow-y-auto">
+            <nav className="flex flex-col space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between py-3 text-base font-medium text-gray-200 hover:text-brand-cyan border-b border-brand-steelBlue/20 transition-colors"
+                >
+                  <span>{link.label}</span>
+                  <span className="text-brand-cyan/60 text-xs font-mono">{isRtl ? '←' : '→'}</span>
+                </Link>
+              ))}
+            </nav>
+
+            <div className="pt-2">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3.5 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 transition-all rounded-lg shadow-[0_0_15px_rgba(91,192,222,0.4)]"
+              >
+                <MessageSquare className="w-4 h-4 fill-current" />
+                <span>{dict.nav.callUs} (0565694440)</span>
+              </a>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );
