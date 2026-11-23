@@ -8,6 +8,7 @@ import { BeforeAfterSlider } from '@/components/automotive/BeforeAfterSlider';
 import { WorkshopMap } from '@/components/automotive/WorkshopMap';
 import { GoogleReviewButton } from '@/components/common/GoogleReviewButton';
 import { CinematicHero } from '@/components/home/CinematicHero';
+import { TestimonialSlider } from '@/components/home/TestimonialSlider';
 import { WhatsAppIcon } from '@/components/icons/SocialIcons';
 import { ArrowRight, ArrowLeft, Shield, Sparkles, Sun, Zap, Cpu, Radio, Wrench, CheckCircle, Star } from 'lucide-react';
 
@@ -365,39 +366,7 @@ export default async function HomePage({ params }: HomePageProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t) => (
-              <div
-                key={t.id}
-                className="p-8 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 flex flex-col justify-between space-y-6"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-1 text-brand-amber">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-300 italic leading-relaxed">
-                    &ldquo;{isRtl ? t.review_ar : t.review_en}&rdquo;
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-brand-steelBlue/30 flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-bold text-white font-display">
-                      {isRtl ? t.client_name_ar : t.client_name_en}
-                    </h4>
-                    {t.vehicle_info && (
-                      <p className="text-xs font-mono text-gray-400 mt-0.5">
-                        {t.vehicle_info}
-                      </p>
-                    )}
-                  </div>
-                  <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <TestimonialSlider testimonials={testimonials} lang={lang} />
 
           {/* Rate Us on Google Banner */}
           <div className="p-8 rounded-2xl bg-gradient-to-r from-brand-navy via-brand-deepNavy to-brand-navy border border-brand-steelBlue/40 flex flex-col sm:flex-row items-center justify-between gap-6">

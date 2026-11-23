@@ -1,43 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ContactMessage, EnquiryStatus } from '@/types';
-import { Mail, Search, MessageSquare, Phone, Check, Clock, Archive, X } from 'lucide-react';
+import { Mail, Search, MessageSquare, Phone, Check, Clock, Archive, X, CheckCircle2, Loader2, Save } from 'lucide-react';
 
 export default function AdminEnquiriesPage() {
-  const [enquiries, setEnquiries] = useState<ContactMessage[]>([
-    {
-      id: 'enq-1',
-      customer_name: 'Rashid Al-Falasi',
-      email: 'rashid.f@example.ae',
-      phone: '+971 50 882 1923',
-      service_id: 's1-upholstery',
-      message: 'Looking to re-trim my 2022 Porsche 911 GT3 seats with black Alcantara and guards red stitching. Please share availability and estimated turnaround time.',
-      preferred_language: 'en',
-      status: 'new',
-      internal_notes: 'Initial quotation requested. Follow up scheduled.',
-      created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-      updated_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    },
-    {
-      id: 'enq-2',
-      customer_name: 'Tareq Mansoor',
-      email: 'tareq.m@example.com',
-      phone: '+971 55 319 4410',
-      service_id: 's3-tinting',
-      message: 'استفسار عن تظليل عازل حراري نانو سيراميك لسيارة رنج روفر أوتوبيوغرافي، هل العازل يشمل فتحة البانوراما؟',
-      preferred_language: 'ar',
-      status: 'in_progress',
-      internal_notes: 'Quotation of AED 2,200 sent via WhatsApp. Client confirmed appointment for Thursday.',
-      created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-      updated_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-    },
-  ]);
-
+  const [enquiries, setEnquiries] = useState<ContactMessage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedEnquiry, setSelectedEnquiry] = useState<ContactMessage | null>(null);
   const [noteInput, setNoteInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
+
+  const fetchEnquiries = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/contact');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.enquiries)) {
+        setEnquiries(data.enquiries);
+      }
+    } catch (err) {
+      console.error('Failed to load enquiries:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEnquiries();
+  }, []);
 
   const filteredEnquiries = enquiries.filter((e) => {
     const matchesSearch =
@@ -51,25 +45,71 @@ export default function AdminEnquiriesPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const updateStatus = (id: string, newStatus: EnquiryStatus) => {
-    setEnquiries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, status: newStatus, updated_at: new Date().toISOString() } : e))
-    );
-    if (selectedEnquiry && selectedEnquiry.id === id) {
-      setSelectedEnquiry({ ...selectedEnquiry, status: newStatus });
+  const updateStatus = async (id: string, newStatus: EnquiryStatus) => {
+    setIsSaving(true);
+    setSaveSuccessMsg(null);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEnquiries((prev) =>
+          prev.map((e) => (e.id === id ? { ...e, status: newStatus, updated_at: new Date().toISOString() } : e))
+        );
+        if (selectedEnquiry && selectedEnquiry.id === id) {
+          setSelectedEnquiry({ ...selectedEnquiry, status: newStatus });
+        }
+        setSaveSuccessMsg(`Status updated to "${newStatus.replace('_', ' ')}" and saved!`);
+        setTimeout(() => setSaveSuccessMsg(null), 3000);
+      } else {
+        alert(data.message || 'Failed to update status');
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+      alert('Network error saving status');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (!selectedEnquiry) return;
-    setEnquiries((prev) =>
-      prev.map((e) =>
-        e.id === selectedEnquiry.id
-          ? { ...e, internal_notes: noteInput, updated_at: new Date().toISOString() }
-          : e
-      )
-    );
-    setSelectedEnquiry({ ...selectedEnquiry, internal_notes: noteInput });
+    setIsSaving(true);
+    setSaveSuccessMsg(null);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedEnquiry.id,
+          status: selectedEnquiry.status,
+          internalNotes: noteInput,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEnquiries((prev) =>
+          prev.map((e) =>
+            e.id === selectedEnquiry.id
+              ? { ...e, internal_notes: noteInput, updated_at: new Date().toISOString() }
+              : e
+          )
+        );
+        setSelectedEnquiry({ ...selectedEnquiry, internal_notes: noteInput });
+        setSaveSuccessMsg('Internal workshop notes saved successfully!');
+        setTimeout(() => setSaveSuccessMsg(null), 3000);
+      } else {
+        alert(data.message || 'Failed to save notes');
+      }
+    } catch (err) {
+      console.error('Error saving notes:', err);
+      alert('Network error saving notes');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -218,19 +258,34 @@ export default function AdminEnquiriesPage() {
               </div>
             </div>
 
+            {saveSuccessMsg && (
+              <div className="p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{saveSuccessMsg}</span>
+              </div>
+            )}
+
             {/* Status Change Buttons */}
             <div>
-              <label className="block text-xs font-mono uppercase text-gray-400 mb-2">Change Status</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-mono uppercase text-gray-400">Change Status</label>
+                {isSaving && (
+                  <span className="text-[10px] font-mono text-brand-cyan flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Saving...
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {(['new', 'in_progress', 'contacted', 'completed', 'archived'] as EnquiryStatus[]).map((st) => (
                   <button
                     key={st}
+                    disabled={isSaving}
                     onClick={() => updateStatus(selectedEnquiry.id, st)}
                     className={`py-1.5 text-xs font-mono uppercase font-bold rounded border transition-colors ${
                       selectedEnquiry.status === st
-                        ? 'bg-brand-cyan text-brand-deepNavy border-brand-cyan'
+                        ? 'bg-brand-cyan text-brand-deepNavy border-brand-cyan shadow-[0_0_10px_rgba(91,192,222,0.3)]'
                         : 'bg-brand-deepNavy text-gray-400 border-brand-steelBlue/40 hover:text-white'
-                    }`}
+                    } disabled:opacity-50`}
                   >
                     {st.replace('_', ' ')}
                   </button>
@@ -249,10 +304,12 @@ export default function AdminEnquiriesPage() {
                 className="w-full px-3 py-2 bg-brand-deepNavy border border-brand-steelBlue/50 rounded-lg text-sm text-white focus:border-brand-cyan"
               />
               <button
+                disabled={isSaving}
                 onClick={handleSaveNote}
-                className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan rounded hover:bg-brand-cyan/90 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan rounded hover:bg-brand-cyan/90 transition-colors disabled:opacity-50"
               >
-                Save Internal Notes
+                {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                <span>Save Internal Notes</span>
               </button>
             </div>
           </div>

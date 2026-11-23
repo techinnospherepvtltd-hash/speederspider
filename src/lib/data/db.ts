@@ -29,7 +29,34 @@ let memoryTestimonials: TestimonialItem[] = [...INITIAL_TESTIMONIALS];
 let memoryInventory: InventoryItem[] = [...INITIAL_INVENTORY];
 let memoryCategories: InventoryCategory[] = [...INITIAL_CATEGORIES];
 let memoryTransactions: InventoryTransaction[] = [];
-let memoryEnquiries: ContactMessage[] = [];
+let memoryEnquiries: ContactMessage[] = [
+  {
+    id: 'enq-1',
+    customer_name: 'Rashid Al-Falasi',
+    email: 'rashid.f@example.ae',
+    phone: '+971 50 882 1923',
+    service_id: 's1-upholstery',
+    message: 'Looking to re-trim my 2022 Porsche 911 GT3 seats with black Alcantara and guards red stitching. Please share availability and estimated turnaround time.',
+    preferred_language: 'en',
+    status: 'new',
+    internal_notes: 'Initial quotation requested. Follow up scheduled.',
+    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
+  {
+    id: 'enq-2',
+    customer_name: 'Tareq Mansoor',
+    email: 'tareq.m@example.com',
+    phone: '+971 55 319 4410',
+    service_id: 's3-tinting',
+    message: 'استفسار عن تظليل عازل حراري نانو سيراميك لسيارة رنج روفر أوتوبيوغرافي، هل العازل يشمل فتحة البانوراما؟',
+    preferred_language: 'ar',
+    status: 'in_progress',
+    internal_notes: 'Quotation of AED 2,200 sent via WhatsApp. Client confirmed appointment for Thursday.',
+    created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 12).toISOString(),
+  },
+];
 let memorySettings: Record<string, Record<string, unknown>> = {
   google_review_url: {
     url: '',
@@ -358,7 +385,7 @@ export async function deleteProject(id: string): Promise<boolean> {
 // ==========================================
 // TESTIMONIALS REPOSITORY
 // ==========================================
-export async function getTestimonials(): Promise<TestimonialItem[]> {
+export async function getAllTestimonialsAdmin(): Promise<TestimonialItem[]> {
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     const { data, error } = await supabase
@@ -367,7 +394,89 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
       .order('display_order', { ascending: true });
     if (!error && data && data.length > 0) return data as TestimonialItem[];
   }
+  return memoryTestimonials.sort((a, b) => a.display_order - b.display_order);
+}
+
+export async function getTestimonials(): Promise<TestimonialItem[]> {
+  const supabase = await createServerSupabaseClient();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .select('*')
+      .eq('is_published', true)
+      .order('display_order', { ascending: true });
+    if (!error && data && data.length > 0) return data as TestimonialItem[];
+  }
   return memoryTestimonials.filter(t => t.is_published).sort((a, b) => a.display_order - b.display_order);
+}
+
+export async function createTestimonialItem(item: Omit<TestimonialItem, 'id' | 'created_at'>): Promise<TestimonialItem> {
+  const newId = 't-' + Date.now();
+  const newItem: TestimonialItem = {
+    ...item,
+    id: newId,
+    created_at: new Date().toISOString(),
+  };
+
+  const supabase = await createServerSupabaseClient();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .insert(newItem)
+      .select()
+      .single();
+    if (!error && data) {
+      memoryTestimonials.push(data as TestimonialItem);
+      return data as TestimonialItem;
+    }
+    if (error) console.error('Supabase create testimonial error:', error);
+  }
+
+  memoryTestimonials.push(newItem);
+  return newItem;
+}
+
+export async function updateTestimonialItem(id: string, item: Partial<TestimonialItem>): Promise<TestimonialItem | null> {
+  const supabase = await createServerSupabaseClient();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .update(item)
+      .eq('id', id)
+      .select()
+      .single();
+    if (!error && data) {
+      const idx = memoryTestimonials.findIndex(t => t.id === id);
+      if (idx !== -1) memoryTestimonials[idx] = data as TestimonialItem;
+      return data as TestimonialItem;
+    }
+    if (error) console.error('Supabase update testimonial error:', error);
+  }
+
+  const idx = memoryTestimonials.findIndex(t => t.id === id);
+  if (idx !== -1) {
+    memoryTestimonials[idx] = { ...memoryTestimonials[idx], ...item };
+    return memoryTestimonials[idx];
+  }
+  return null;
+}
+
+export async function deleteTestimonialItem(id: string): Promise<boolean> {
+  const supabase = await createServerSupabaseClient();
+  if (supabase) {
+    const { error } = await supabase
+      .from('testimonials')
+      .delete()
+      .eq('id', id);
+    if (error) console.error('Supabase delete testimonial error:', error);
+  }
+
+  const idx = memoryTestimonials.findIndex(t => t.id === id);
+  if (idx !== -1) {
+    memoryTestimonials.splice(idx, 1);
+    return true;
+  }
+  return false;
 }
 
 // ==========================================
@@ -608,6 +717,19 @@ export async function saveContactMessage(msg: Omit<ContactMessage, 'id' | 'creat
 }
 
 export async function updateEnquiryStatus(id: string, status: EnquiryStatus, internalNotes?: string): Promise<boolean> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    const updateData: any = { status, updated_at: new Date().toISOString() };
+    if (internalNotes !== undefined) {
+      updateData.internal_notes = internalNotes;
+    }
+    const { error } = await supabase
+      .from('contact_messages')
+      .update(updateData)
+      .eq('id', id);
+    if (error) console.error('Supabase update enquiry status error:', error);
+  }
+
   const index = memoryEnquiries.findIndex(e => e.id === id);
   if (index !== -1) {
     memoryEnquiries[index].status = status;

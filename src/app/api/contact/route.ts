@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { saveContactMessage } from '@/lib/data/db';
+import { saveContactMessage, getEnquiries, updateEnquiryStatus } from '@/lib/data/db';
 
 const contactSchema = z.object({
   customerName: z.string().min(2, 'Name is required').max(150),
@@ -107,6 +107,49 @@ export async function POST(req: NextRequest) {
         success: false,
         message: 'Internal server error processing enquiry. Please message WhatsApp directly.',
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const enquiries = await getEnquiries();
+    return NextResponse.json({ success: true, enquiries });
+  } catch (err: any) {
+    console.error('Error fetching enquiries:', err);
+    return NextResponse.json(
+      { success: false, message: err?.message || 'Failed to fetch enquiries' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, status, internalNotes } = body;
+
+    if (!id || !status) {
+      return NextResponse.json(
+        { success: false, message: 'Both id and status are required' },
+        { status: 400 }
+      );
+    }
+
+    const success = await updateEnquiryStatus(id, status, internalNotes);
+    if (!success) {
+      return NextResponse.json(
+        { success: false, message: 'Enquiry not found or update failed' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, message: 'Enquiry updated successfully' });
+  } catch (err: any) {
+    console.error('Error updating enquiry:', err);
+    return NextResponse.json(
+      { success: false, message: err?.message || 'Failed to update enquiry' },
       { status: 500 }
     );
   }

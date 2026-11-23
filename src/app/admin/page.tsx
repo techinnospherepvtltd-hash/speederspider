@@ -20,6 +20,9 @@ import {
 import { formatCurrencyAED } from '@/lib/utils';
 import { AdminSettingsCard } from '@/components/admin/AdminSettingsCard';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   const services = await getAllServicesAdmin();
   const projects = await getProjects();
