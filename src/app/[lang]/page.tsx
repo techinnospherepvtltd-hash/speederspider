@@ -210,12 +210,12 @@ export default async function HomePage({ params }: HomePageProps) {
           {/* Interactive Before & After Slider Component */}
           <div className="max-w-4xl mx-auto">
             <BeforeAfterSlider
-              beforeImage="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80"
-              afterImage="https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1400&q=80"
+              beforeImage="/images/home-before-craftsmanship.webp"
+              afterImage="/images/home-after-craftsmanship.webp"
               beforeLabel={dict.beforeAfter.beforeLabel}
               afterLabel={dict.beforeAfter.afterLabel}
-              beforeAlt="Porsche 911 GT3 paint prior to multi-stage paint correction"
-              afterAlt="Porsche 911 GT3 paint following multi-stage paint correction and 9H ceramic coating"
+              beforeAlt={isRtl ? "أودي R8 V10 أثناء تفكيك المصد الخلفي ونظام العادم للفحص الميكانيكي الدقيق" : "Audi R8 V10 rear bumper and exhaust disassembly during precision mechanical service"}
+              afterAlt={isRtl ? "أودي R8 V10 بعد اكتمال الصيانة الميكانيكية وإعادة التجميع والفحص الشامل" : "Audi R8 V10 completed mechanical overhaul, reassembly, and comprehensive diagnostic inspection"}
               aspectRatio="16/9"
             />
             <p className="text-center text-xs font-mono uppercase tracking-wider text-gray-500 mt-4">
