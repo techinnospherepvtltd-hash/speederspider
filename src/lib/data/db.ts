@@ -43,11 +43,12 @@ let memorySettings: Record<string, Record<string, unknown>> = {
 // SERVICES REPOSITORY
 // ==========================================
 export async function getServices(): Promise<ServiceItem[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('services')
       .select('*')
+      .eq('is_published', true)
       .order('display_order', { ascending: true });
     if (!error && data && data.length > 0) return data as ServiceItem[];
   }
@@ -55,7 +56,7 @@ export async function getServices(): Promise<ServiceItem[]> {
 }
 
 export async function getAllServicesAdmin(): Promise<ServiceItem[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('services')
@@ -67,7 +68,7 @@ export async function getAllServicesAdmin(): Promise<ServiceItem[]> {
 }
 
 export async function getServiceBySlug(slug: string): Promise<ServiceItem | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await getDbClient();
   if (supabase) {
     const { data, error } = await supabase
       .from('services')
@@ -79,23 +80,110 @@ export async function getServiceBySlug(slug: string): Promise<ServiceItem | null
   return memoryServices.find(s => s.slug_en === slug || s.slug_ar === slug) || null;
 }
 
-export async function updateServiceItem(id: string, updates: Partial<ServiceItem>): Promise<ServiceItem | null> {
+export async function createServiceItem(service: Omit<ServiceItem, 'id' | 'created_at' | 'updated_at'>): Promise<ServiceItem> {
   const supabase = await getDbClient();
+  const now = new Date().toISOString();
+
+  const cleanedService = {
+    ...service,
+    featured_image: normalizeGoogleDriveUrl(service.featured_image),
+    before_image: service.before_image ? normalizeGoogleDriveUrl(service.before_image) : null,
+    after_image: service.after_image ? normalizeGoogleDriveUrl(service.after_image) : null,
+    gallery_images: Array.isArray(service.gallery_images)
+      ? service.gallery_images.map(normalizeGoogleDriveUrl)
+      : [],
+    display_order: Number(service.display_order) || 0,
+    is_published: service.is_published ?? true,
+    icon_name: service.icon_name || 'Wrench',
+  };
+
   if (supabase) {
     const { data, error } = await supabase
       .from('services')
-      .update(updates)
+      .insert(cleanedService)
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase createServiceItem error:', error.message, error.details);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (data) return data as ServiceItem;
+  }
+
+  const newService: ServiceItem = {
+    ...cleanedService,
+    id: 's-' + Math.random().toString(36).substring(2, 9),
+    created_at: now,
+    updated_at: now,
+  };
+  memoryServices.push(newService);
+  return newService;
+}
+
+export async function updateServiceItem(id: string, updates: Partial<ServiceItem>): Promise<ServiceItem | null> {
+  const supabase = await getDbClient();
+
+  const cleanedUpdates: Record<string, unknown> = { ...updates };
+  delete cleanedUpdates.id;
+  delete cleanedUpdates.created_at;
+  delete cleanedUpdates.updated_at;
+
+  if (typeof cleanedUpdates.featured_image === 'string') {
+    cleanedUpdates.featured_image = normalizeGoogleDriveUrl(cleanedUpdates.featured_image);
+  }
+  if (typeof cleanedUpdates.before_image === 'string') {
+    cleanedUpdates.before_image = cleanedUpdates.before_image.trim() !== '' ? normalizeGoogleDriveUrl(cleanedUpdates.before_image) : null;
+  }
+  if (typeof cleanedUpdates.after_image === 'string') {
+    cleanedUpdates.after_image = cleanedUpdates.after_image.trim() !== '' ? normalizeGoogleDriveUrl(cleanedUpdates.after_image) : null;
+  }
+  if (Array.isArray(cleanedUpdates.gallery_images)) {
+    cleanedUpdates.gallery_images = cleanedUpdates.gallery_images.map(normalizeGoogleDriveUrl);
+  }
+  if (cleanedUpdates.display_order !== undefined) {
+    cleanedUpdates.display_order = Number(cleanedUpdates.display_order) || 0;
+  }
+
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('services')
+      .update(cleanedUpdates)
       .eq('id', id)
       .select()
       .single();
-    if (!error && data) return data as ServiceItem;
+    if (error) {
+      console.error('Supabase updateServiceItem error:', error.message, error.details);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (data) return data as ServiceItem;
   }
   const index = memoryServices.findIndex(s => s.id === id);
   if (index !== -1) {
-    memoryServices[index] = { ...memoryServices[index], ...updates, updated_at: new Date().toISOString() };
+    memoryServices[index] = { ...memoryServices[index], ...cleanedUpdates, updated_at: new Date().toISOString() };
     return memoryServices[index];
   }
   return null;
+}
+
+export async function deleteServiceItem(id: string): Promise<boolean> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    const { error } = await supabase
+      .from('services')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Supabase deleteServiceItem error:', error.message, error.details);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    return true;
+  }
+  const index = memoryServices.findIndex(s => s.id === id);
+  if (index !== -1) {
+    memoryServices.splice(index, 1);
+    return true;
+  }
+  return false;
 }
 
 // ==========================================
