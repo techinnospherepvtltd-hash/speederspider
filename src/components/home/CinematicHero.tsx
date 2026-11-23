@@ -125,7 +125,7 @@ export function CinematicHero({ lang, dict }: CinematicHeroProps) {
               alt={
                 isRtl
                   ? 'سيارة رياضية فائقة الأداء تجسد دقة وحرفية سبيدر سبايدر في دبي'
-                  : 'Ultra modern blue sports car showcasing SpeederSpider automotive craftsmanship in Dubai'
+                  : 'Ultra modern supercar showcasing SpeederSpider automotive craftsmanship in Dubai'
               }
               fetchPriority="high"
             />
