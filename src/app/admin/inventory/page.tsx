@@ -244,6 +244,9 @@ export default function AdminInventoryPage() {
       setModalType(null);
       setTransQuantity(1);
       setTransReason('');
+
+      // Refresh full inventory and transaction logs from backend
+      await fetchInventory();
     } catch (err) {
       setTransError('Network error while processing transaction');
     }

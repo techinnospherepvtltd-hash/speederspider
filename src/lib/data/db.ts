@@ -528,7 +528,10 @@ export async function createInventoryItem(item: Omit<InventoryItem, 'id' | 'crea
       console.error('Supabase createInventoryItem error:', error.message);
       throw new Error(`Database error: ${error.message}`);
     }
-    if (data) return data as InventoryItem;
+    if (data) {
+      memoryInventory.unshift(data as InventoryItem);
+      return data as InventoryItem;
+    }
   }
 
   const newItem: InventoryItem = {
@@ -615,6 +618,102 @@ export async function executeStockChange(
   reason: string,
   performedBy: string = 'Active Workshop Supervisor'
 ): Promise<{ success: boolean; item?: InventoryItem; error?: string }> {
+  const supabase = await getDbClient();
+  const now = new Date().toISOString();
+
+  // 1. If Supabase is available, check and execute in Supabase first
+  if (supabase) {
+    try {
+      const { data: currentItem, error: fetchError } = await supabase
+        .from('inventory_items')
+        .select('*, category:inventory_categories(*)')
+        .eq('id', itemId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Supabase fetch inventory item error:', fetchError);
+      }
+
+      if (currentItem) {
+        const currentQty = Number(currentItem.quantity) || 0;
+        let newQty = currentQty;
+        let qtyDelta = 0;
+
+        if (type === 'stock_in') {
+          if (qty <= 0) return { success: false, error: 'Stock in quantity must be positive' };
+          newQty = currentQty + qty;
+          qtyDelta = qty;
+        } else if (type === 'stock_out') {
+          if (qty <= 0) return { success: false, error: 'Stock out quantity must be positive' };
+          if (currentQty < qty) {
+            return { success: false, error: `Insufficient stock (Available: ${currentQty})` };
+          }
+          newQty = currentQty - qty;
+          qtyDelta = -qty;
+        } else if (type === 'adjustment') {
+          if (qty < 0) return { success: false, error: 'Adjusted stock quantity cannot be negative' };
+          qtyDelta = qty - currentQty;
+          newQty = qty;
+        }
+
+        // Update item quantity in Supabase
+        const { data: updatedItem, error: updateError } = await supabase
+          .from('inventory_items')
+          .update({ quantity: newQty, updated_at: now })
+          .eq('id', itemId)
+          .select('*, category:inventory_categories(*)')
+          .single();
+
+        if (updateError) {
+          console.error('Supabase update item quantity error:', updateError);
+          return { success: false, error: updateError.message };
+        }
+
+        // Insert transaction log
+        const isUuid = performedBy && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(performedBy);
+        const { error: txError } = await supabase
+          .from('inventory_transactions')
+          .insert({
+            item_id: itemId,
+            transaction_type: type,
+            quantity_changed: qtyDelta,
+            resulting_quantity: newQty,
+            reason,
+            performed_by: isUuid ? performedBy : null,
+            notes: isUuid ? null : `Supervisor: ${performedBy}`,
+            created_at: now,
+          });
+
+        if (txError) {
+          console.error('Supabase insert transaction error, falling back to minimal payload:', txError);
+          try {
+            await supabase.from('inventory_transactions').insert({
+              item_id: itemId,
+              transaction_type: type,
+              quantity_changed: qtyDelta,
+              resulting_quantity: newQty,
+              reason,
+              created_at: now,
+            });
+          } catch (fallbackErr) {
+            console.error('Fallback transaction insert error:', fallbackErr);
+          }
+        }
+
+        // Keep local memory in sync if item exists there
+        const memIdx = memoryInventory.findIndex(i => i.id === itemId);
+        if (memIdx !== -1) {
+          memoryInventory[memIdx] = { ...memoryInventory[memIdx], quantity: newQty, updated_at: now };
+        }
+
+        return { success: true, item: (updatedItem || { ...currentItem, quantity: newQty, updated_at: now }) as InventoryItem };
+      }
+    } catch (e: any) {
+      console.error('Supabase stock change execution error:', e);
+    }
+  }
+
+  // 2. Check memoryInventory fallback
   const itemIndex = memoryInventory.findIndex(i => i.id === itemId);
   if (itemIndex === -1) return { success: false, error: 'Item not found' };
 
@@ -639,7 +738,6 @@ export async function executeStockChange(
     newQty = qty;
   }
 
-  const now = new Date().toISOString();
   memoryInventory[itemIndex] = {
     ...current,
     quantity: newQty,
@@ -657,24 +755,6 @@ export async function executeStockChange(
     created_at: now,
   };
   memoryTransactions.unshift(tx);
-
-  // If Supabase is available, sync to database
-  const supabase = await getDbClient();
-  if (supabase) {
-    try {
-      await supabase.from('inventory_items').update({ quantity: newQty, updated_at: now }).eq('id', itemId);
-      await supabase.from('inventory_transactions').insert({
-        item_id: itemId,
-        transaction_type: type,
-        quantity_changed: qtyDelta,
-        resulting_quantity: newQty,
-        reason,
-        created_at: now,
-      });
-    } catch (e) {
-      console.error('Supabase inventory sync error:', e);
-    }
-  }
 
   return { success: true, item: memoryInventory[itemIndex] };
 }
