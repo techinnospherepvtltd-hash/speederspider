@@ -668,19 +668,147 @@ export async function deleteProductItem(id: string): Promise<boolean> {
 }
 
 // ==========================================
-// INVENTORY REPOSITORY (MANUAL CONTROL - NO AUTO SEEDING)
+// CATEGORIES REPOSITORY (UNIFIED FOR ALL MODULES)
 // ==========================================
-export async function getInventoryCategories(): Promise<InventoryCategory[]> {
+export async function getCategories(): Promise<InventoryCategory[]> {
   const supabase = await createServerSupabaseClient();
   if (supabase) {
-    const { data, error } = await supabase
-      .from('inventory_categories')
-      .select('*')
-      .order('name_en', { ascending: true });
-    if (!error && data && data.length > 0) return data as InventoryCategory[];
+    try {
+      const { data, error } = await supabase
+        .from('inventory_categories')
+        .select('*')
+        .order('name_en', { ascending: true });
+      if (!error && data && data.length > 0) {
+        memoryCategories = data as InventoryCategory[];
+        return data as InventoryCategory[];
+      }
+    } catch (e) {
+      // fallback
+    }
   }
-  return memoryCategories;
+  return memoryCategories.sort((a, b) => a.name_en.localeCompare(b.name_en));
 }
+
+// Backward compatibility alias
+export const getInventoryCategories = getCategories;
+
+export async function createCategory(cat: Omit<InventoryCategory, 'id' | 'created_at'>): Promise<InventoryCategory> {
+  const supabase = await getDbClient();
+  const slug = (cat.slug || cat.name_en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'cat-' + Date.now();
+  const payload = {
+    name_en: cat.name_en.trim(),
+    name_ar: (cat.name_ar || cat.name_en).trim(),
+    slug,
+    description: cat.description ? cat.description.trim() : null,
+  };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('inventory_categories')
+        .insert(payload)
+        .select()
+        .single();
+      if (!error && data) {
+        memoryCategories.push(data as InventoryCategory);
+        return data as InventoryCategory;
+      }
+      if (error) console.error('Supabase createCategory error:', error.message);
+    } catch (e) {
+      console.error('Supabase exception creating category:', e);
+    }
+  }
+
+  const newId = 'c-' + Date.now().toString(36);
+  const newCat: InventoryCategory = {
+    ...payload,
+    id: newId,
+    created_at: new Date().toISOString(),
+  };
+  memoryCategories.push(newCat);
+  return newCat;
+}
+
+export async function updateCategory(id: string, updates: Partial<InventoryCategory>): Promise<InventoryCategory | null> {
+  const supabase = await getDbClient();
+  const cleaned: any = {};
+  if (updates.name_en !== undefined) cleaned.name_en = updates.name_en.trim();
+  if (updates.name_ar !== undefined) cleaned.name_ar = updates.name_ar.trim();
+  if (updates.slug !== undefined) cleaned.slug = updates.slug.trim();
+  if (updates.description !== undefined) cleaned.description = updates.description ? updates.description.trim() : null;
+
+  let dbResult: InventoryCategory | null = null;
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('inventory_categories')
+        .update(cleaned)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        dbResult = data as InventoryCategory;
+      } else if (error) {
+        console.error('Supabase updateCategory error:', error.message);
+      }
+    } catch (e) {
+      console.error('Supabase exception updating category:', e);
+    }
+  }
+
+  const idx = memoryCategories.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    memoryCategories[idx] = { ...memoryCategories[idx], ...cleaned, ...(dbResult || {}) };
+    return memoryCategories[idx];
+  }
+  if (dbResult) {
+    memoryCategories.push(dbResult);
+    return dbResult;
+  }
+  return null;
+}
+
+export async function deleteCategory(id: string): Promise<{ success: boolean; message?: string }> {
+  const supabase = await getDbClient();
+
+  if (supabase) {
+    try {
+      const { count: invCount } = await supabase
+        .from('inventory_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('category_id', id);
+
+      if (invCount && invCount > 0) {
+        return {
+          success: false,
+          message: `Cannot delete category: ${invCount} inventory item(s) are currently assigned to it. Please reassign them first.`,
+        };
+      }
+
+      const { error } = await supabase
+        .from('inventory_categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Supabase deleteCategory error:', error.message);
+        return { success: false, message: error.message };
+      }
+    } catch (e: any) {
+      console.error('Supabase exception deleting category:', e);
+    }
+  }
+
+  const idx = memoryCategories.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    memoryCategories.splice(idx, 1);
+  }
+  return { success: true };
+}
+
+// ==========================================
+// INVENTORY REPOSITORY (MANUAL CONTROL - NO AUTO SEEDING)
+// ==========================================
 
 export async function getInventoryItems(): Promise<InventoryItem[]> {
   const supabase = await createServerSupabaseClient();

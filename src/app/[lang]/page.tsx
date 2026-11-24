@@ -73,7 +73,7 @@ export default async function HomePage({ params }: HomePageProps) {
     },
     sameAs: [
       'https://www.facebook.com/share/1EFvDZmQN6/',
-      'https://www.instagram.com/dsusvip?bqrl=MWw5YnQ5YmdqYWowbg==',
+      'https://www.instagram.com/speeder_spider?evlk=MWw5YnQ5YmdqYWowbg==',
     ],
   };
 

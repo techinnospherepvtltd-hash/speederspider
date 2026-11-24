@@ -382,13 +382,16 @@ export const INITIAL_TESTIMONIALS: TestimonialItem[] = [
 ];
 
 export const INITIAL_CATEGORIES: InventoryCategory[] = [
-  { id: "c1", name_en: "Leather & Fabric", name_ar: "الجلود والأقمشة", slug: "leather-fabric", created_at: "2026-11-01T00:00:00Z" },
-  { id: "c2", name_en: "Detailing & Coatings", name_ar: "مواد التلميع والنانو", slug: "detailing-coatings", created_at: "2026-11-01T00:00:00Z" },
-  { id: "c3", name_en: "Window Films", name_ar: "أفلام التظليل والعزل", slug: "window-films", created_at: "2026-11-01T00:00:00Z" },
-  { id: "c4", name_en: "Electrical Spares", name_ar: "قطع الكهرباء والحساسات", slug: "electrical-spares", created_at: "2026-11-01T00:00:00Z" },
-  { id: "c5", name_en: "Fluids & Filters", name_ar: "الزيوت والفلاتر", slug: "fluids-filters", created_at: "2026-11-01T00:00:00Z" },
-  { id: "c6", name_en: "Multimedia & Audio", name_ar: "أنظمة الصوت والشاشات", slug: "multimedia-audio", created_at: "2026-11-01T00:00:00Z" },
-  { id: "c7", name_en: "Paints & Bodywork", name_ar: "دهانات ومواد السمكرة", slug: "paints-bodywork", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c1", name_en: "Multimedia & Audio", name_ar: "أنظمة الصوت والشاشات", slug: "multimedia-audio", description: "Harness adapters, head units, Android screens, CarPlay boxes, and speakers.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c2", name_en: "Window Films", name_ar: "أفلام التظليل والعزل", slug: "window-films", description: "Ceramic tint rolls, heat rejection films, squeegees, and mounting solutions.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c3", name_en: "Security & Tracking", name_ar: "أنظمة التتبع والأمان", slug: "security-tracking", description: "GSM vehicle GPS trackers, remote monitoring, and anti-theft systems.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c4", name_en: "Automotive Lighting", name_ar: "إضاءة ومصابيح السيارات", slug: "automotive-lighting", description: "High-intensity LED bulbs, headlights, ambient cabin lighting, and fog lights.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c5", name_en: "Accessories & Upgrades", name_ar: "إكسسوارات وترقيات السيارات", slug: "accessories-upgrades", description: "Portable car fridges, interior organizers, wireless chargers, and bespoke gadgets.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c6", name_en: "Leather & Fabric", name_ar: "الجلود والأقمشة", slug: "leather-fabric", description: "Automotive hides, Nappa leather, Alcantara, thread spools, and adhesives.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c7", name_en: "Detailing & Coatings", name_ar: "مواد التلميع والنانو", slug: "detailing-coatings", description: "Ceramic coatings, cutting compounds, polishing pads, microfibers, and sealants.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c8", name_en: "Electrical Spares", name_ar: "قطع الكهرباء والحساسات", slug: "electrical-spares", description: "Relays, fuses, wiring looms, sensors, and electronic control connectors.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c9", name_en: "Fluids & Filters", name_ar: "الزيوت والفلاتر", slug: "fluids-filters", description: "Synthetic motor oils, brake pads, filters, spark plugs, and coolants.", created_at: "2026-11-01T00:00:00Z" },
+  { id: "c10", name_en: "Paints & Bodywork", name_ar: "دهانات ومواد السمكرة", slug: "paints-bodywork", description: "Primers, basecoats, clearcoats, body fillers, abrasives, and masking tape.", created_at: "2026-11-01T00:00:00Z" },
 ];
 
 // Production Inventory starts clean without automatic random or predefined products.

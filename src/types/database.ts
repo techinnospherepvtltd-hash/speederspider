@@ -119,6 +119,8 @@ export interface InventoryCategory {
   created_at: string;
 }
 
+export type CategoryItem = InventoryCategory;
+
 export interface InventoryItem {
   id: string;
   sku: string;

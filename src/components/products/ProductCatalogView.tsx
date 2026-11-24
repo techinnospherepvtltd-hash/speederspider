@@ -2,17 +2,18 @@
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { ProductItem, Language } from '@/types';
+import { ProductItem, Language, InventoryCategory } from '@/types';
 import { dictionaries } from '@/lib/i18n/translations';
 import { WhatsAppIcon } from '@/components/icons/SocialIcons';
 import { Search, Tag, Eye, X, CheckCircle2, ShieldCheck, Sparkles, SlidersHorizontal } from 'lucide-react';
 
 interface ProductCatalogViewProps {
   products: ProductItem[];
+  categories?: InventoryCategory[];
   lang: Language;
 }
 
-export function ProductCatalogView({ products, lang }: ProductCatalogViewProps) {
+export function ProductCatalogView({ products, categories = [], lang }: ProductCatalogViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalProduct, setActiveModalProduct] = useState<ProductItem | null>(null);
@@ -20,14 +21,32 @@ export function ProductCatalogView({ products, lang }: ProductCatalogViewProps) 
   const isRtl = lang === 'ar';
   const dict = dictionaries[lang];
 
-  // Extract unique categories
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
+  // Map category names to bilingual display
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, { name_en: string; name_ar: string }>();
+    if (categories && categories.length > 0) {
+      categories.forEach((c) => {
+        map.set(c.name_en.toLowerCase(), { name_en: c.name_en, name_ar: c.name_ar });
+        map.set(c.slug.toLowerCase(), { name_en: c.name_en, name_ar: c.name_ar });
+      });
+    }
+    return map;
+  }, [categories]);
+
+  // Unique categories list for filters with bilingual labels
+  const categoryPills = useMemo(() => {
+    const unique = new Set<string>();
     products.forEach((p) => {
-      if (p.category) cats.add(p.category);
+      if (p.category) unique.add(p.category);
     });
-    return Array.from(cats);
-  }, [products]);
+    return Array.from(unique).map((catName) => {
+      const match = categoryMap.get(catName.toLowerCase());
+      return {
+        id: catName,
+        label: match ? (isRtl ? match.name_ar : match.name_en) : catName,
+      };
+    });
+  }, [products, categoryMap, isRtl]);
 
   // Filtered products based on search & category
   const filteredProducts = useMemo(() => {
@@ -111,17 +130,17 @@ Could you please share availability, pricing options, and workshop installation 
             >
               {dict.products.allProducts} ({products.length})
             </button>
-            {categories.map((cat) => (
+            {categoryPills.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shrink-0 ${
-                  selectedCategory === cat
+                  selectedCategory === cat.id
                     ? 'bg-brand-cyan text-brand-deepNavy font-bold shadow-[0_0_15px_rgba(91,192,222,0.4)]'
                     : 'bg-brand-deepNavy/80 text-gray-300 hover:text-white border border-brand-steelBlue/40 hover:border-brand-cyan/50'
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -205,7 +224,9 @@ Could you please share availability, pricing options, and workshop installation 
                     {/* Category Label */}
                     {product.category && (
                       <span className="text-[10px] uppercase tracking-wider font-mono text-brand-cyan/80 block">
-                        {product.category}
+                        {categoryMap.get(product.category.toLowerCase())
+                          ? (isRtl ? categoryMap.get(product.category.toLowerCase())!.name_ar : categoryMap.get(product.category.toLowerCase())!.name_en)
+                          : product.category}
                       </span>
                     )}
 
@@ -338,7 +359,9 @@ Could you please share availability, pricing options, and workshop installation 
                   </span>
                   {activeModalProduct.category && (
                     <span className="px-2.5 py-1 rounded-md bg-brand-navy border border-brand-steelBlue/40 text-xs font-mono text-gray-300">
-                      {activeModalProduct.category}
+                      {categoryMap.get(activeModalProduct.category.toLowerCase())
+                        ? (isRtl ? categoryMap.get(activeModalProduct.category.toLowerCase())!.name_ar : categoryMap.get(activeModalProduct.category.toLowerCase())!.name_en)
+                        : activeModalProduct.category}
                     </span>
                   )}
                 </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { dictionaries } from '@/lib/i18n/translations';
 import { Language } from '@/types';
-import { getProducts } from '@/lib/data/db';
+import { getProducts, getCategories } from '@/lib/data/db';
 import { ProductCatalogView } from '@/components/products/ProductCatalogView';
 
 export const dynamic = 'force-dynamic';
@@ -44,7 +44,10 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
   const lang = (paramLang === 'ar' ? 'ar' : 'en') as Language;
   const dict = dictionaries[lang];
 
-  const products = await getProducts();
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
 
   return (
     <div className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12 sm:space-y-16">
@@ -61,8 +64,8 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
         </p>
       </div>
 
-      {/* Interactive Product Catalog View with WhatsApp buttons */}
-      <ProductCatalogView products={products} lang={lang} />
+      {/* Interactive Product Catalog View with WhatsApp buttons & unified categories */}
+      <ProductCatalogView products={products} categories={categories} lang={lang} />
     </div>
   );
 }

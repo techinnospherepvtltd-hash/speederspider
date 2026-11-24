@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { ProductItem } from '@/types';
+import Link from 'next/link';
+import { ProductItem, InventoryCategory } from '@/types';
 import { normalizeGoogleDriveUrl } from '@/lib/utils';
 import { WhatsAppIcon } from '@/components/icons/SocialIcons';
 import {
@@ -20,7 +21,8 @@ import {
   ExternalLink,
   ImageIcon,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  FolderTree
 } from 'lucide-react';
 
 interface ProductFormData {
@@ -72,6 +74,7 @@ const CATEGORY_OPTIONS = [
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
+  const [categories, setCategories] = useState<InventoryCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -83,24 +86,46 @@ export default function AdminProductsPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/products?admin=true');
-      const data = await res.json();
-      if (data.success && Array.isArray(data.products)) {
-        setProducts(data.products);
+      const [resProd, resCat] = await Promise.all([
+        fetch('/api/products?admin=true'),
+        fetch('/api/categories'),
+      ]);
+      const dataProd = await resProd.json();
+      const dataCat = await resCat.json();
+
+      if (dataProd.success && Array.isArray(dataProd.products)) {
+        setProducts(dataProd.products);
+      }
+      if (dataCat.success && Array.isArray(dataCat.categories)) {
+        setCategories(dataCat.categories);
       }
     } catch (err) {
-      console.error('Failed to fetch products:', err);
+      console.error('Failed to fetch products or categories:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
+
+  const availableCategories = useMemo(() => {
+    const list: { label: string; value: string }[] = [];
+    categories.forEach((c) => {
+      list.push({ label: `${c.name_en} (${c.name_ar})`, value: c.name_en });
+    });
+    // Include any existing product categories if not already present
+    products.forEach((p) => {
+      if (p.category && !list.some((l) => l.value.toLowerCase() === p.category?.toLowerCase())) {
+        list.push({ label: p.category, value: p.category });
+      }
+    });
+    return list;
+  }, [categories, products]);
 
   const openAddModal = () => {
     setFormData({
@@ -174,7 +199,7 @@ export default function AdminProductsPage() {
       setSuccessMsg(isEditing ? 'Product updated successfully!' : 'New product created successfully!');
       setTimeout(() => setSuccessMsg(null), 4000);
       setIsModalOpen(false);
-      fetchProducts();
+      fetchData();
     } catch (err: any) {
       setError(err.message || 'An error occurred while saving.');
     } finally {
@@ -313,17 +338,17 @@ export default function AdminProductsPage() {
           >
             All ({products.length})
           </button>
-          {CATEGORY_OPTIONS.map((cat) => (
+          {availableCategories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              key={cat.value}
+              onClick={() => setSelectedCategory(cat.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase font-mono tracking-wider transition-all shrink-0 ${
-                selectedCategory === cat
+                selectedCategory === cat.value
                   ? 'bg-brand-cyan text-brand-deepNavy font-bold'
                   : 'bg-brand-deepNavy text-gray-300 hover:text-white border border-brand-steelBlue/40'
               }`}
             >
-              {cat}
+              {cat.value}
             </button>
           ))}
         </div>
@@ -699,15 +724,25 @@ export default function AdminProductsPage() {
               {/* Category, Display Order, Status Toggles */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-gray-300 uppercase">Category</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono text-gray-300 uppercase">Category</label>
+                    <Link
+                      href="/admin/categories"
+                      target="_blank"
+                      className="text-[10px] text-brand-cyan hover:underline flex items-center gap-1 font-mono"
+                    >
+                      <span>+ Categories</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </Link>
+                  </div>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl bg-brand-navy border border-brand-steelBlue/50 text-xs text-white focus:outline-none focus:border-brand-cyan"
                   >
-                    {CATEGORY_OPTIONS.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
+                    {availableCategories.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
                       </option>
                     ))}
                   </select>
