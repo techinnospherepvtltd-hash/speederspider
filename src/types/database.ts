@@ -103,6 +103,8 @@ export interface ProductItem {
   description_ar: string;
   image_url: string;
   category?: string | null;
+  category_id?: string | null;
+  category_rel?: InventoryCategory | null;
   display_order: number;
   is_published: boolean;
   is_featured?: boolean;

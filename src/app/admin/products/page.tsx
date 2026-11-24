@@ -39,6 +39,7 @@ interface ProductFormData {
   description_ar: string;
   image_url: string;
   category: string;
+  category_id?: string;
   display_order: number;
   is_published: boolean;
   is_featured: boolean;
@@ -152,6 +153,7 @@ export default function AdminProductsPage() {
       description_ar: p.description_ar || '',
       image_url: p.image_url || '',
       category: p.category || 'Accessories',
+      category_id: p.category_id || undefined,
       display_order: p.display_order || 1,
       is_published: p.is_published,
       is_featured: p.is_featured ?? false,
@@ -737,7 +739,15 @@ export default function AdminProductsPage() {
                   </div>
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const match = categories.find((c) => c.name_en === val || c.id === val);
+                      setFormData({
+                        ...formData,
+                        category: match ? match.name_en : val,
+                        category_id: match ? match.id : undefined,
+                      });
+                    }}
                     className="w-full px-3 py-2.5 rounded-xl bg-brand-navy border border-brand-steelBlue/50 text-xs text-white focus:outline-none focus:border-brand-cyan"
                   >
                     {availableCategories.map((c) => (

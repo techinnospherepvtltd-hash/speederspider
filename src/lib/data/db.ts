@@ -484,10 +484,19 @@ export async function deleteTestimonialItem(id: string): Promise<boolean> {
 // ==========================================
 // PRODUCTS REPOSITORY
 // ==========================================
-const formatProduct = (p: ProductItem): ProductItem => ({
-  ...p,
-  image_url: normalizeGoogleDriveUrl(p.image_url),
-});
+const formatProduct = (p: ProductItem): ProductItem => {
+  const cat = memoryCategories.find(c => 
+    (p.category_id && c.id === p.category_id) || 
+    (p.category && (c.name_en.toLowerCase() === p.category.toLowerCase() || c.slug.toLowerCase() === p.category.toLowerCase()))
+  );
+  return {
+    ...p,
+    image_url: normalizeGoogleDriveUrl(p.image_url),
+    category: cat ? cat.name_en : (p.category || 'Accessories'),
+    category_id: p.category_id || (cat ? cat.id : null),
+    category_rel: cat || null,
+  };
+};
 
 export async function getProducts(): Promise<ProductItem[]> {
   const supabase = await getDbClient();
@@ -554,9 +563,18 @@ export async function createProductItem(product: Omit<ProductItem, 'id' | 'creat
     .replace(/(^-|-$)/g, '');
   const newId = 'prod-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
 
+  const matchedCat = memoryCategories.find(c => 
+    (product.category_id && c.id === product.category_id) ||
+    (product.category && (c.name_en.toLowerCase() === product.category.toLowerCase() || c.slug.toLowerCase() === product.category.toLowerCase()))
+  );
+  const resolvedCategory = matchedCat ? matchedCat.name_en : (product.category || 'Accessories');
+  const resolvedCategoryId = matchedCat ? matchedCat.id : (product.category_id || null);
+
   const cleaned: ProductItem = {
     ...product,
     id: newId,
+    category: resolvedCategory,
+    category_id: resolvedCategoryId,
     image_url: normalizeGoogleDriveUrl(product.image_url),
     slug_en: product.slug_en || slugBase,
     slug_ar: product.slug_ar || slugBase,
@@ -575,8 +593,9 @@ export async function createProductItem(product: Omit<ProductItem, 'id' | 'creat
         .select()
         .single();
       if (!error && data) {
-        memoryProducts.push(formatProduct(data as ProductItem));
-        return formatProduct(data as ProductItem);
+        const formatted = formatProduct(data as ProductItem);
+        memoryProducts.push(formatted);
+        return formatted;
       }
       if (error) console.error('Supabase createProductItem error:', error.message);
     } catch (e) {
@@ -584,8 +603,9 @@ export async function createProductItem(product: Omit<ProductItem, 'id' | 'creat
     }
   }
 
-  memoryProducts.push(cleaned);
-  return cleaned;
+  const formatted = formatProduct(cleaned);
+  memoryProducts.push(formatted);
+  return formatted;
 }
 
 export async function updateProductItem(id: string, updates: Partial<ProductItem>): Promise<ProductItem | null> {
@@ -600,6 +620,16 @@ export async function updateProductItem(id: string, updates: Partial<ProductItem
   }
   if (cleanedUpdates.display_order !== undefined) {
     cleanedUpdates.display_order = Number(cleanedUpdates.display_order) || 0;
+  }
+  if (cleanedUpdates.category || cleanedUpdates.category_id) {
+    const matchedCat = memoryCategories.find(c => 
+      (cleanedUpdates.category_id && c.id === cleanedUpdates.category_id) ||
+      (cleanedUpdates.category && (c.name_en.toLowerCase() === String(cleanedUpdates.category).toLowerCase() || c.slug.toLowerCase() === String(cleanedUpdates.category).toLowerCase()))
+    );
+    if (matchedCat) {
+      cleanedUpdates.category = matchedCat.name_en;
+      cleanedUpdates.category_id = matchedCat.id;
+    }
   }
 
   let updatedInDb = false;
@@ -758,6 +788,7 @@ export async function createCategory(cat: Omit<InventoryCategory, 'id' | 'create
 
 export async function updateCategory(id: string, updates: Partial<InventoryCategory>): Promise<InventoryCategory | null> {
   const supabase = await getDbClient();
+  const oldCat = memoryCategories.find(c => c.id === id);
   const cleaned: any = {};
   if (updates.name_en !== undefined) cleaned.name_en = updates.name_en.trim();
   if (updates.name_ar !== undefined) cleaned.name_ar = updates.name_ar.trim();
@@ -789,6 +820,25 @@ export async function updateCategory(id: string, updates: Partial<InventoryCateg
         dbResult = data as InventoryCategory;
       }
     } catch (e) {}
+
+    // Cascade name_en update to products table if category name changed
+    if (oldCat && cleaned.name_en && cleaned.name_en !== oldCat.name_en) {
+      try {
+        await supabase
+          .from('products')
+          .update({ category: cleaned.name_en })
+          .or(`category_id.eq.${id},category.eq.${oldCat.name_en}`);
+      } catch (e) {}
+    }
+  }
+
+  // Cascade to memory products
+  if (oldCat && cleaned.name_en && cleaned.name_en !== oldCat.name_en) {
+    memoryProducts.forEach(p => {
+      if (p.category_id === id || p.category === oldCat.name_en) {
+        p.category = cleaned.name_en;
+      }
+    });
   }
 
   const idx = memoryCategories.findIndex(c => c.id === id);
@@ -805,31 +855,53 @@ export async function updateCategory(id: string, updates: Partial<InventoryCateg
 
 export async function deleteCategory(id: string): Promise<{ success: boolean; message?: string }> {
   const supabase = await getDbClient();
+  const catToDelete = memoryCategories.find(c => c.id === id);
+
+  let invCount = 0;
+  let prodCount = 0;
 
   if (supabase) {
     try {
-      const { count: invCount } = await supabase
+      const { count: iCount } = await supabase
         .from('inventory_items')
         .select('id', { count: 'exact', head: true })
         .eq('category_id', id);
+      invCount = iCount || 0;
 
-      if (invCount && invCount > 0) {
-        return {
-          success: false,
-          message: `Cannot delete category: ${invCount} inventory item(s) are currently assigned to it. Please reassign them first.`,
-        };
-      }
-
-      try {
-        await supabase.from('categories').delete().eq('id', id);
-      } catch (e) {}
-
-      try {
-        await supabase.from('inventory_categories').delete().eq('id', id);
-      } catch (e) {}
+      const { count: pCount } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .or(`category_id.eq.${id},category.eq.${catToDelete?.name_en || ''}`);
+      prodCount = pCount || 0;
     } catch (e: any) {
-      console.error('Supabase exception deleting category:', e);
+      console.error('Supabase count check error deleting category:', e);
     }
+  }
+
+  const memInvCount = memoryInventory.filter(i => i.category_id === id).length;
+  const memProdCount = memoryProducts.filter(p => p.category_id === id || (catToDelete && p.category === catToDelete.name_en)).length;
+
+  const totalInv = Math.max(invCount, memInvCount);
+  const totalProd = Math.max(prodCount, memProdCount);
+
+  if (totalInv > 0 || totalProd > 0) {
+    const reasons: string[] = [];
+    if (totalProd > 0) reasons.push(`${totalProd} product(s)`);
+    if (totalInv > 0) reasons.push(`${totalInv} inventory item(s)`);
+    return {
+      success: false,
+      message: `Cannot delete category "${catToDelete?.name_en || id}": ${reasons.join(' and ')} are currently assigned to it. Please reassign or delete them first.`,
+    };
+  }
+
+  if (supabase) {
+    try {
+      await supabase.from('categories').delete().eq('id', id);
+    } catch (e) {}
+
+    try {
+      await supabase.from('inventory_categories').delete().eq('id', id);
+    } catch (e) {}
   }
 
   const idx = memoryCategories.findIndex(c => c.id === id);

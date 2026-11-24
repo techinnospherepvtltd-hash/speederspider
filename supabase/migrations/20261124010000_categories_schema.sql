@@ -137,3 +137,55 @@ SET
     name_ar = EXCLUDED.name_ar,
     description = EXCLUDED.description,
     updated_at = timezone('utc'::text, now());
+
+-- 4. Re-link inventory_items foreign key to public.categories
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'inventory_items'
+    ) THEN
+        -- Drop existing constraint referencing inventory_categories if present
+        ALTER TABLE public.inventory_items 
+            DROP CONSTRAINT IF EXISTS inventory_items_category_id_fkey;
+
+        -- Add constraint referencing public.categories
+        ALTER TABLE public.inventory_items 
+            ADD CONSTRAINT inventory_items_category_id_fkey 
+            FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE RESTRICT;
+    END IF;
+END $$;
+
+-- 5. Link products table to public.categories via category_id
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'products'
+    ) THEN
+        -- Add category_id column if not exists
+        IF NOT EXISTS (
+            SELECT FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'products' AND column_name = 'category_id'
+        ) THEN
+            ALTER TABLE public.products 
+                ADD COLUMN category_id UUID REFERENCES public.categories(id) ON DELETE SET NULL;
+            
+            CREATE INDEX IF NOT EXISTS idx_products_category_id ON public.products(category_id);
+        END IF;
+
+        -- Backfill existing products with matching category_id
+        UPDATE public.products p
+        SET category_id = c.id
+        FROM public.categories c
+        WHERE p.category_id IS NULL AND (
+            LOWER(p.category) = LOWER(c.name_en)
+            OR LOWER(p.category) = LOWER(c.slug)
+            OR (p.category ILIKE '%Multimedia%' AND c.slug = 'multimedia-audio')
+            OR (p.category ILIKE '%Window%' AND c.slug = 'window-films')
+            OR (p.category ILIKE '%Tracking%' AND c.slug = 'security-tracking')
+            OR (p.category ILIKE '%Light%' AND c.slug = 'automotive-lighting')
+            OR (p.category ILIKE '%Accessories%' AND c.slug = 'accessories-upgrades')
+        );
+    END IF;
+END $$;
