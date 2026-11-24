@@ -673,6 +673,19 @@ export async function deleteProductItem(id: string): Promise<boolean> {
 export async function getCategories(): Promise<InventoryCategory[]> {
   const supabase = await createServerSupabaseClient();
   if (supabase) {
+    // 1. Try unified public.categories table first
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name_en', { ascending: true });
+      if (!error && data && data.length > 0) {
+        memoryCategories = data as InventoryCategory[];
+        return data as InventoryCategory[];
+      }
+    } catch (e) {}
+
+    // 2. Fall back to public.inventory_categories table
     try {
       const { data, error } = await supabase
         .from('inventory_categories')
@@ -682,9 +695,7 @@ export async function getCategories(): Promise<InventoryCategory[]> {
         memoryCategories = data as InventoryCategory[];
         return data as InventoryCategory[];
       }
-    } catch (e) {
-      // fallback
-    }
+    } catch (e) {}
   }
   return memoryCategories.sort((a, b) => a.name_en.localeCompare(b.name_en));
 }
@@ -703,6 +714,22 @@ export async function createCategory(cat: Omit<InventoryCategory, 'id' | 'create
   };
 
   if (supabase) {
+    // Try inserting into public.categories first
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert(payload)
+        .select()
+        .single();
+      if (!error && data) {
+        memoryCategories.push(data as InventoryCategory);
+        // Also sync into inventory_categories
+        try { await supabase.from('inventory_categories').insert(payload); } catch (e) {}
+        return data as InventoryCategory;
+      }
+    } catch (e) {}
+
+    // Fall back to inserting into public.inventory_categories
     try {
       const { data, error } = await supabase
         .from('inventory_categories')
@@ -741,19 +768,27 @@ export async function updateCategory(id: string, updates: Partial<InventoryCateg
   if (supabase) {
     try {
       const { data, error } = await supabase
-        .from('inventory_categories')
+        .from('categories')
         .update(cleaned)
         .eq('id', id)
         .select()
         .single();
       if (!error && data) {
         dbResult = data as InventoryCategory;
-      } else if (error) {
-        console.error('Supabase updateCategory error:', error.message);
       }
-    } catch (e) {
-      console.error('Supabase exception updating category:', e);
-    }
+    } catch (e) {}
+
+    try {
+      const { data, error } = await supabase
+        .from('inventory_categories')
+        .update(cleaned)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data && !dbResult) {
+        dbResult = data as InventoryCategory;
+      }
+    } catch (e) {}
   }
 
   const idx = memoryCategories.findIndex(c => c.id === id);
@@ -785,15 +820,13 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; me
         };
       }
 
-      const { error } = await supabase
-        .from('inventory_categories')
-        .delete()
-        .eq('id', id);
+      try {
+        await supabase.from('categories').delete().eq('id', id);
+      } catch (e) {}
 
-      if (error) {
-        console.error('Supabase deleteCategory error:', error.message);
-        return { success: false, message: error.message };
-      }
+      try {
+        await supabase.from('inventory_categories').delete().eq('id', id);
+      } catch (e) {}
     } catch (e: any) {
       console.error('Supabase exception deleting category:', e);
     }
