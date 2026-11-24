@@ -448,3 +448,44 @@
   4. **Verification:**
      * `npm run type-check`: 0 TypeScript errors.
      * `npm run build`: 35/35 routes compiled successfully in 2.9s.
+
+
+---
+
+### [Stage 22] — Simple Business Money & Payment Tracker Module
+* **Timestamp:** 2026-11-25T00:50:00+05:30
+* **Status:** Complete
+* **Implementation Details:**
+  1. **Schema & Migration (`public.payments`):**
+     * Authored migration `supabase/migrations/20261125000000_payments_schema.sql` creating table `public.payments` with `id` (UUID), `transaction_date` (date), `transaction_type` (INCOME, EXPENSE, OWNER_WITHDRAWAL, OWNER_CONTRIBUTION), `amount` (numeric(12,2) in AED), `category`, `description`, `payment_method` (CASH, BANK_TRANSFER, CARD, OTHER), `reference_number`, `created_by`, `created_at`, and `updated_at`.
+     * Added performance indexes on `transaction_date`, `transaction_type`, `category`, and `created_at`.
+     * Enabled Row Level Security (RLS) with policies restricting financial visibility and mutations to authorized `owner` and `manager` roles (`is_manager_or_above()`, `is_owner()`).
+     * Appended complete schema into `supabase/COMPLETE_SETUP.sql`.
+  2. **Data Layer & Calculations (`src/lib/data/db.ts`):**
+     * Registered TypeScript interfaces and types: `PaymentTransactionType`, `PaymentMethod`, `PaymentItem`, `PaymentSummary`, `PaymentFilters`, `PaymentCategoryBreakdown`, `MonthlyCashFlow`.
+     * Initialized clean, empty in-memory runtime array `let memoryPayments: PaymentItem[] = []` ensuring zero mock/dummy transactions.
+     * Implemented core repository functions:
+       - `getPayments(filters)`: Supports type, category, date presets (`today`, `this_week`, `this_month`, `last_month`, `custom`, `all`), and search queries.
+       - `createPayment(...)`, `updatePayment(...)`, `deletePayment(...)`.
+       - `getPaymentSummary(filters)`: Computes actual mathematical totals:
+         * `Total Income`, `Total Expenses`, `Total Owner Withdrawals`, `Total Owner Contributions`.
+         * `Net Operating Cash Flow = Total Income - Total Expenses`.
+         * `Net Cash Movement = Total Income + Total Owner Contributions - Total Expenses - Total Owner Withdrawals`.
+         * Spending by category with percentage distribution and amounts.
+         * Income by category and monthly cash flow progression.
+  3. **Protected API Endpoint (`src/app/api/payments/route.ts`):**
+     * Enforced server-side session authentication with `verifyAdminRouteAccess(req, ['owner', 'manager'])`.
+     * Strict Zod payload validation for amounts, dates, and categories.
+     * Integrated automated audit logging (`PAYMENT_CREATE`, `PAYMENT_UPDATE`, `PAYMENT_DELETE`) in `public.audit_logs`.
+     * Revalidation triggers for `/admin/payments` and `/admin`.
+  4. **Admin UI (`src/app/admin/(portal)/payments/page.tsx`):**
+     * 6 KPI summary cards displaying exact financial metrics with directional badges and AED currency formatting.
+     * Dynamic date preset filters (Today, This Week, This Month, Last Month, Custom Range, All Time).
+     * Spending & Income category breakdowns with interactive visual percentage bars.
+     * Full transaction history table with color-coded badges (Green income, Red expense, Amber withdrawal, Cyan contribution).
+     * Add/Edit transaction modal featuring dynamic categories tailored to selected transaction type + custom "Other" text entry.
+     * One-click client-side CSV export generator (`speeder-spider-transactions-[date].csv`).
+     * Delete confirmation safety modal.
+  5. **Navigation & Dashboard Integration:**
+     * Added `Money Tracker` navigation entry with `Wallet` icon into `AdminPortalShell.tsx` for `owner` and `manager` roles.
+     * Added live Cash Flow summary card in main workshop admin telemetry dashboard (`src/app/admin/(portal)/page.tsx`).

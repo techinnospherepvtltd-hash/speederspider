@@ -192,3 +192,79 @@ export interface AuditLog {
   created_at: string;
   user?: Profile;
 }
+
+// ==========================================
+// PAYMENTS & FINANCIAL TRACKER TYPES
+// ==========================================
+export type PaymentTransactionType =
+  | 'INCOME'
+  | 'EXPENSE'
+  | 'OWNER_WITHDRAWAL'
+  | 'OWNER_CONTRIBUTION';
+
+export type PaymentMethod =
+  | 'CASH'
+  | 'BANK_TRANSFER'
+  | 'CARD'
+  | 'OTHER';
+
+export interface PaymentItem {
+  id: string;
+  transaction_date: string; // YYYY-MM-DD
+  transaction_type: PaymentTransactionType;
+  amount: number; // numeric(12,2) in AED
+  category: string;
+  description?: string | null;
+  payment_method: PaymentMethod;
+  reference_number?: string | null;
+  created_by?: string | null;
+  creator_name?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentCategoryBreakdown {
+  category: string;
+  amount: number;
+  percentage: number;
+  count: number;
+}
+
+export interface MonthlyCashFlow {
+  month: string; // e.g. "2026-11"
+  label: string; // e.g. "Nov 2026"
+  income: number;
+  expense: number;
+  netOperating: number;
+}
+
+export interface PaymentSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  totalWithdrawals: number;
+  totalContributions: number;
+  netOperatingCashFlow: number; // Income - Expenses
+  netCashMovement: number; // Income + Contributions - Expenses - Withdrawals
+  transactionCount: number;
+  spendingByCategory: PaymentCategoryBreakdown[];
+  incomeByCategory: PaymentCategoryBreakdown[];
+  monthlyComparison: MonthlyCashFlow[];
+}
+
+export type PaymentDateFilterPreset =
+  | 'all'
+  | 'today'
+  | 'this_week'
+  | 'this_month'
+  | 'last_month'
+  | 'custom';
+
+export interface PaymentFilters {
+  type?: PaymentTransactionType | 'ALL';
+  category?: string;
+  datePreset?: PaymentDateFilterPreset;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+

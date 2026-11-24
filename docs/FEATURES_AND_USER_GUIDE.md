@@ -154,6 +154,34 @@ The admin portal is protected and enforces role-based access control.
 * Offers a "Test Link" button to verify the URL in a new tab before saving.
 * Automatically activates the "Rate Us on Google" CTA across the public website once saved.
 
+### 4.9 Simple Business Money & Payment Tracker (`/admin/payments`)
+A purpose-built, lightweight financial management module designed for manual cash tracking without complex ERP overhead or automated dummy entries.
+* **Core Business Questions Answered:**
+  1. *How much money has come into the business?* (`Total Income`)
+  2. *How much money has gone out?* (`Total Expenses`)
+  3. *How much money have I personally taken out?* (`Total Owner Withdrawals`)
+  4. *How much money have I invested in the business?* (`Total Owner Contributions`)
+  5. *What is the current net operating cash flow?* (`Net Operating Cash Flow = Total Income - Total Expenses`)
+  6. *What is the actual net cash movement?* (`Net Cash Movement = Income + Contributions - Expenses - Withdrawals`)
+  7. *Where exactly is the money being spent?* (Real-time category spending breakdown with percentage bars)
+* **Transaction Types Supported:**
+  * **INCOME:** Customer payments, service revenue, product sales, consulting/inspections.
+  * **EXPENSE:** Inventory purchases, workshop rent, electricity & utilities, equipment & tools, marketing & ads, staff & salaries, maintenance & repairs, fuel & transport, office supplies.
+  * **OWNER_WITHDRAWAL:** Personal drawings, profit share, owner distributions. (Tracked strictly separately from operating business expenses).
+  * **OWNER_CONTRIBUTION:** Initial capital, additional personal injections, emergency funding, loans. (Tracked strictly separately from customer income).
+* **Date Filtering & Presets:**
+  * One-click presets: *Today*, *This Week*, *This Month*, *Last Month*, *Custom Date Range*, *All Time*.
+  * Calculations dynamically reflect the selected period.
+* **Dynamic Category Management:**
+  * Pre-populated with relevant workshop categories based on the selected transaction type.
+  * Choosing "Other" instantly presents a custom category input for granular labeling.
+* **Data Security & Integrity:**
+  * Financial amounts are stored as exact `numeric(12,2)` in AED (never floating point).
+  * Restricted exclusively to `OWNER` and `MANAGER` roles via server-side session authentication.
+  * Immutable audit logging captures all transaction creations, updates, and deletions with user ID and timestamp.
+* **Exporting & Reporting:**
+  * Built-in CSV export generator downloads the currently filtered transaction records with formatting preserved (`speeder-spider-transactions-[date].csv`).
+
 ---
 
 ## 5. Google Drive Media Integration Guide

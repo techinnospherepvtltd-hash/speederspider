@@ -14,6 +14,7 @@ import {
   Boxes,
   Mail,
   ShieldAlert,
+  Wallet,
   LogOut,
   ExternalLink,
   Menu,
@@ -51,6 +52,7 @@ export function AdminPortalShell({ session, children }: AdminPortalShellProps) {
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, roles: ['owner', 'manager', 'staff'] },
+    { href: '/admin/payments', label: 'Money Tracker', icon: Wallet, roles: ['owner', 'manager'] },
     { href: '/admin/services', label: 'Services', icon: Wrench, roles: ['owner', 'manager'] },
     { href: '/admin/portfolio', label: 'Portfolio', icon: ImageIcon, roles: ['owner', 'manager'] },
     { href: '/admin/products', label: 'Products', icon: ShoppingBag, roles: ['owner', 'manager'] },

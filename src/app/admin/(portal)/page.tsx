@@ -5,7 +5,8 @@ import {
   getProjects,
   getEnquiries,
   getInventoryItems,
-  getAllProductsAdmin
+  getAllProductsAdmin,
+  getPaymentSummary,
 } from '@/lib/data/db';
 import {
   Wrench,
@@ -17,7 +18,8 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Wallet,
 } from 'lucide-react';
 import { formatCurrencyAED } from '@/lib/utils';
 import { AdminSettingsCard } from '@/components/admin/AdminSettingsCard';
@@ -31,6 +33,7 @@ export default async function AdminDashboardPage() {
   const enquiries = await getEnquiries();
   const inventory = await getInventoryItems();
   const products = await getAllProductsAdmin();
+  const paymentsSummary = await getPaymentSummary({ datePreset: 'this_month' });
 
   const publishedServices = services.filter((s) => s.is_published).length;
   const publishedProjects = projects.filter((p) => p.is_published).length;
@@ -89,7 +92,7 @@ export default async function AdminDashboardPage() {
       )}
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {/* Metric 1: Services */}
         <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
           <div className="flex items-center justify-between">
@@ -197,6 +200,31 @@ export default async function AdminDashboardPage() {
             className="text-xs font-semibold text-brand-cyan hover:underline flex items-center gap-1 pt-2 border-t border-brand-steelBlue/30"
           >
             <span>Workshop Stock</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Metric 6: Money Tracker (This Month) */}
+        <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono uppercase text-gray-400">Cash Flow (Month)</span>
+            <div className="p-2 rounded-lg bg-brand-deepNavy text-emerald-400">
+              <Wallet className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <p className="text-xl font-bold font-mono text-white truncate">
+              AED {paymentsSummary.netCashMovement >= 0 ? '+' : ''}{paymentsSummary.netCashMovement.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Net Movement ({paymentsSummary.transactionCount} records)
+            </p>
+          </div>
+          <Link
+            href="/admin/payments"
+            className="text-xs font-semibold text-brand-cyan hover:underline flex items-center gap-1 pt-2 border-t border-brand-steelBlue/30"
+          >
+            <span>Money Tracker</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

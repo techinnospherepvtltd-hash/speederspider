@@ -14,6 +14,14 @@ import {
   EnquiryStatus,
   SiteSetting,
   AuditLog,
+  PaymentItem,
+  PaymentTransactionType,
+  PaymentMethod,
+  PaymentSummary,
+  PaymentFilters,
+  PaymentCategoryBreakdown,
+  MonthlyCashFlow,
+  PaymentDateFilterPreset,
 } from '@/types';
 
 // Helper to obtain authorized database client for mutations & admin queries
@@ -33,6 +41,7 @@ let memoryInventory: InventoryItem[] = [...INITIAL_INVENTORY];
 let memoryCategories: InventoryCategory[] = [...INITIAL_CATEGORIES];
 let memoryTransactions: InventoryTransaction[] = [];
 let memoryAuditLogs: AuditLog[] = [];
+let memoryPayments: PaymentItem[] = [];
 let memoryEnquiries: ContactMessage[] = [
   {
     id: 'enq-1',
@@ -1349,4 +1358,368 @@ export async function getAuditLogs(limit = 100): Promise<AuditLog[]> {
   }
 
   return memoryAuditLogs.slice(0, limit);
+}
+
+// ==========================================
+// PAYMENTS & FINANCIAL TRACKER REPOSITORY
+// ==========================================
+
+export function getDateRangeFromPreset(
+  preset?: PaymentDateFilterPreset,
+  customStart?: string,
+  customEnd?: string
+): { start?: string; end?: string } {
+  if (!preset || preset === 'all') {
+    return {};
+  }
+  const now = new Date();
+  const formatYMD = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  if (preset === 'today') {
+    const todayStr = formatYMD(now);
+    return { start: todayStr, end: todayStr };
+  }
+
+  if (preset === 'this_week') {
+    // Current week: Monday to Sunday
+    const day = now.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return { start: formatYMD(monday), end: formatYMD(sunday) };
+  }
+
+  if (preset === 'this_month') {
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return { start: formatYMD(startOfMonth), end: formatYMD(endOfMonth) };
+  }
+
+  if (preset === 'last_month') {
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    return { start: formatYMD(startOfLastMonth), end: formatYMD(endOfLastMonth) };
+  }
+
+  if (preset === 'custom') {
+    return {
+      start: customStart ? customStart.split('T')[0] : undefined,
+      end: customEnd ? customEnd.split('T')[0] : undefined,
+    };
+  }
+
+  return {};
+}
+
+export async function getPayments(filters?: PaymentFilters): Promise<PaymentItem[]> {
+  const supabase = await getDbClient();
+  const { start, end } = getDateRangeFromPreset(filters?.datePreset, filters?.startDate, filters?.endDate);
+
+  if (supabase) {
+    try {
+      let query = supabase
+        .from('payments')
+        .select('*')
+        .order('transaction_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (filters?.type && filters.type !== 'ALL') {
+        query = query.eq('transaction_type', filters.type);
+      }
+      if (filters?.category && filters.category !== 'ALL') {
+        query = query.eq('category', filters.category);
+      }
+      if (start) {
+        query = query.gte('transaction_date', start);
+      }
+      if (end) {
+        query = query.lte('transaction_date', end);
+      }
+      if (filters?.search && filters.search.trim()) {
+        const s = filters.search.trim();
+        query = query.or(`description.ilike.%${s}%,reference_number.ilike.%${s}%,category.ilike.%${s}%`);
+      }
+
+      const { data, error } = await query;
+      if (!error && data) {
+        return (data as any[]).map((p) => ({
+          ...p,
+          amount: Number(p.amount) || 0,
+        })) as PaymentItem[];
+      }
+    } catch (e) {
+      // Fallback to memory
+    }
+  }
+
+  return memoryPayments
+    .filter((p) => {
+      if (filters?.type && filters.type !== 'ALL' && p.transaction_type !== filters.type) return false;
+      if (filters?.category && filters.category !== 'ALL' && p.category !== filters.category) return false;
+      if (start && p.transaction_date < start) return false;
+      if (end && p.transaction_date > end) return false;
+      if (filters?.search && filters.search.trim()) {
+        const term = filters.search.toLowerCase().trim();
+        const desc = (p.description || '').toLowerCase();
+        const ref = (p.reference_number || '').toLowerCase();
+        const cat = (p.category || '').toLowerCase();
+        if (!desc.includes(term) && !ref.includes(term) && !cat.includes(term)) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const dateComp = b.transaction_date.localeCompare(a.transaction_date);
+      if (dateComp !== 0) return dateComp;
+      return b.created_at.localeCompare(a.created_at);
+    });
+}
+
+export async function createPayment(
+  payment: Omit<PaymentItem, 'id' | 'created_at' | 'updated_at'>
+): Promise<PaymentItem> {
+  const supabase = await getDbClient();
+  const now = new Date().toISOString();
+  const newId = 'pay-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+  const cleanAmount = Number(Number(payment.amount).toFixed(2));
+
+  const newPayment: PaymentItem = {
+    ...payment,
+    id: newId,
+    amount: cleanAmount,
+    description: payment.description?.trim() || null,
+    reference_number: payment.reference_number?.trim() || null,
+    created_at: now,
+    updated_at: now,
+  };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .insert({
+          transaction_date: newPayment.transaction_date,
+          transaction_type: newPayment.transaction_type,
+          amount: newPayment.amount,
+          category: newPayment.category,
+          description: newPayment.description,
+          payment_method: newPayment.payment_method,
+          reference_number: newPayment.reference_number,
+          created_by: newPayment.created_by || null,
+        })
+        .select()
+        .single();
+      if (!error && data) {
+        const item: PaymentItem = {
+          ...(data as any),
+          amount: Number(data.amount) || 0,
+        };
+        memoryPayments.unshift(item);
+        return item;
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  memoryPayments.unshift(newPayment);
+  return newPayment;
+}
+
+export async function updatePayment(
+  id: string,
+  updates: Partial<Omit<PaymentItem, 'id' | 'created_at' | 'updated_at'>>
+): Promise<PaymentItem | null> {
+  const supabase = await getDbClient();
+  const now = new Date().toISOString();
+
+  const cleanUpdates: Record<string, unknown> = {
+    ...updates,
+    updated_at: now,
+  };
+  if (updates.amount !== undefined) {
+    cleanUpdates.amount = Number(Number(updates.amount).toFixed(2));
+  }
+  if (updates.description !== undefined) {
+    cleanUpdates.description = updates.description?.trim() || null;
+  }
+  if (updates.reference_number !== undefined) {
+    cleanUpdates.reference_number = updates.reference_number?.trim() || null;
+  }
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .update(cleanUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        const updated: PaymentItem = {
+          ...(data as any),
+          amount: Number(data.amount) || 0,
+        };
+        const idx = memoryPayments.findIndex((p) => p.id === id);
+        if (idx !== -1) {
+          memoryPayments[idx] = updated;
+        } else {
+          memoryPayments.unshift(updated);
+        }
+        return updated;
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  const idx = memoryPayments.findIndex((p) => p.id === id);
+  if (idx === -1) return null;
+  memoryPayments[idx] = {
+    ...memoryPayments[idx],
+    ...cleanUpdates,
+    updated_at: now,
+  } as PaymentItem;
+  return memoryPayments[idx];
+}
+
+export async function deletePayment(id: string): Promise<boolean> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('payments').delete().eq('id', id);
+      if (!error) {
+        memoryPayments = memoryPayments.filter((p) => p.id !== id);
+        return true;
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  const beforeLen = memoryPayments.length;
+  memoryPayments = memoryPayments.filter((p) => p.id !== id);
+  return memoryPayments.length < beforeLen;
+}
+
+export async function getPaymentSummary(filters?: PaymentFilters): Promise<PaymentSummary> {
+  const dateFilters: PaymentFilters = {
+    datePreset: filters?.datePreset,
+    startDate: filters?.startDate,
+    endDate: filters?.endDate,
+    search: filters?.search,
+  };
+
+  const payments = await getPayments(dateFilters);
+
+  let totalIncome = 0;
+  let totalExpenses = 0;
+  let totalWithdrawals = 0;
+  let totalContributions = 0;
+
+  const expenseCategoryMap: Record<string, { amount: number; count: number }> = {};
+  const incomeCategoryMap: Record<string, { amount: number; count: number }> = {};
+  const monthlyMap: Record<string, { income: number; expense: number }> = {};
+
+  for (const p of payments) {
+    const amt = Number(p.amount) || 0;
+    const cat = p.category || 'General';
+    const monthKey = p.transaction_date ? p.transaction_date.slice(0, 7) : new Date().toISOString().slice(0, 7);
+
+    if (!monthlyMap[monthKey]) {
+      monthlyMap[monthKey] = { income: 0, expense: 0 };
+    }
+
+    switch (p.transaction_type) {
+      case 'INCOME':
+        totalIncome += amt;
+        monthlyMap[monthKey].income += amt;
+        if (!incomeCategoryMap[cat]) incomeCategoryMap[cat] = { amount: 0, count: 0 };
+        incomeCategoryMap[cat].amount += amt;
+        incomeCategoryMap[cat].count += 1;
+        break;
+      case 'EXPENSE':
+        totalExpenses += amt;
+        monthlyMap[monthKey].expense += amt;
+        if (!expenseCategoryMap[cat]) expenseCategoryMap[cat] = { amount: 0, count: 0 };
+        expenseCategoryMap[cat].amount += amt;
+        expenseCategoryMap[cat].count += 1;
+        break;
+      case 'OWNER_WITHDRAWAL':
+        totalWithdrawals += amt;
+        break;
+      case 'OWNER_CONTRIBUTION':
+        totalContributions += amt;
+        break;
+    }
+  }
+
+  totalIncome = Number(totalIncome.toFixed(2));
+  totalExpenses = Number(totalExpenses.toFixed(2));
+  totalWithdrawals = Number(totalWithdrawals.toFixed(2));
+  totalContributions = Number(totalContributions.toFixed(2));
+
+  // Net Operating Cash Flow = Income - Expenses
+  const netOperatingCashFlow = Number((totalIncome - totalExpenses).toFixed(2));
+
+  // Net Cash Movement = Income + Owner Contributions - Expenses - Owner Withdrawals
+  const netCashMovement = Number(
+    (totalIncome + totalContributions - totalExpenses - totalWithdrawals).toFixed(2)
+  );
+
+  const spendingByCategory: PaymentCategoryBreakdown[] = Object.entries(expenseCategoryMap)
+    .map(([category, data]) => ({
+      category,
+      amount: Number(data.amount.toFixed(2)),
+      count: data.count,
+      percentage: totalExpenses > 0 ? Number(((data.amount / totalExpenses) * 100).toFixed(1)) : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+
+  const incomeByCategory: PaymentCategoryBreakdown[] = Object.entries(incomeCategoryMap)
+    .map(([category, data]) => ({
+      category,
+      amount: Number(data.amount.toFixed(2)),
+      count: data.count,
+      percentage: totalIncome > 0 ? Number(((data.amount / totalIncome) * 100).toFixed(1)) : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthlyComparison: MonthlyCashFlow[] = Object.entries(monthlyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-6)
+    .map(([month, data]) => {
+      const [year, mStr] = month.split('-');
+      const mIdx = parseInt(mStr, 10) - 1;
+      const label = `${monthNames[mIdx] || mStr} ${year}`;
+      const inc = Number(data.income.toFixed(2));
+      const exp = Number(data.expense.toFixed(2));
+      return {
+        month,
+        label,
+        income: inc,
+        expense: exp,
+        netOperating: Number((inc - exp).toFixed(2)),
+      };
+    });
+
+  return {
+    totalIncome,
+    totalExpenses,
+    totalWithdrawals,
+    totalContributions,
+    netOperatingCashFlow,
+    netCashMovement,
+    transactionCount: payments.length,
+    spendingByCategory,
+    incomeByCategory,
+    monthlyComparison,
+  };
 }
