@@ -6,7 +6,7 @@ import {
   setAdminSessionCookie,
 } from '@/lib/auth/session';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 1. Handle Admin Portal Pages
@@ -83,7 +83,10 @@ export const config = {
      * - /admin/:path*
      * - /api/audit-logs/:path*
      */
+    '/admin',
     '/admin/:path*',
     '/api/audit-logs/:path*',
   ],
 };
+
+export default proxy;

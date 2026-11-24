@@ -7,8 +7,8 @@ import { Shield, Lock, Mail, AlertCircle, CheckCircle2, Loader2 } from 'lucide-r
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('owner@speederspider.com');
-  const [password, setPassword] = useState('Speeder@1234');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,10 +133,22 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
-          <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/30 rounded-lg text-[11px] text-gray-300 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-brand-cyan font-mono uppercase">
-              <CheckCircle2 className="w-3.5 h-3.5 text-brand-cyan" />
-              <span>Cryptographic Session Guard</span>
+          <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/30 rounded-lg text-[11px] text-gray-300 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-semibold text-brand-cyan font-mono uppercase">
+                <CheckCircle2 className="w-3.5 h-3.5 text-brand-cyan" />
+                <span>Protected Workshop Session</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('owner@speederspider.com');
+                  setPassword('Speeder@1234');
+                }}
+                className="text-[10px] font-mono text-brand-cyan/80 hover:text-brand-cyan underline transition-colors"
+              >
+                Use Owner Default
+              </button>
             </div>
             <p className="text-gray-400">
               Signs an HTTP-only SameSite session cookie with 24-hour validity and 4-hour sliding idle protection.
