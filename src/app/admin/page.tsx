@@ -4,13 +4,15 @@ import {
   getAllServicesAdmin,
   getProjects,
   getEnquiries,
-  getInventoryItems
+  getInventoryItems,
+  getAllProductsAdmin
 } from '@/lib/data/db';
 import {
   Wrench,
   ImageIcon,
   Mail,
   Boxes,
+  ShoppingBag,
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
@@ -28,9 +30,11 @@ export default async function AdminDashboardPage() {
   const projects = await getProjects();
   const enquiries = await getEnquiries();
   const inventory = await getInventoryItems();
+  const products = await getAllProductsAdmin();
 
   const publishedServices = services.filter((s) => s.is_published).length;
   const publishedProjects = projects.filter((p) => p.is_published).length;
+  const publishedProducts = products.filter((p) => p.is_published).length;
   const newEnquiries = enquiries.filter((e) => e.status === 'new').length;
   const lowStockItems = inventory.filter((item) => item.quantity <= item.min_threshold);
 
@@ -85,9 +89,9 @@ export default async function AdminDashboardPage() {
       )}
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
         {/* Metric 1: Services */}
-        <div className="p-6 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
+        <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase text-gray-400">Services</span>
             <div className="p-2 rounded-lg bg-brand-deepNavy text-brand-cyan">
@@ -95,8 +99,8 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-3xl font-bold font-mono text-white">{services.length}</p>
-            <p className="text-xs text-gray-400 mt-1">{publishedServices} published on public website</p>
+            <p className="text-2xl font-bold font-mono text-white">{services.length}</p>
+            <p className="text-xs text-gray-400 mt-1">{publishedServices} published online</p>
           </div>
           <Link
             href="/admin/services"
@@ -107,17 +111,38 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
 
-        {/* Metric 2: Portfolio Projects */}
-        <div className="p-6 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
+        {/* Metric 2: Products */}
+        <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-gray-400">Showcase Projects</span>
+            <span className="text-xs font-mono uppercase text-gray-400">Products</span>
+            <div className="p-2 rounded-lg bg-brand-deepNavy text-brand-cyan">
+              <ShoppingBag className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <p className="text-2xl font-bold font-mono text-white">{products.length}</p>
+            <p className="text-xs text-gray-400 mt-1">{publishedProducts} published in store</p>
+          </div>
+          <Link
+            href="/admin/products"
+            className="text-xs font-semibold text-brand-cyan hover:underline flex items-center gap-1 pt-2 border-t border-brand-steelBlue/30"
+          >
+            <span>Manage Products</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Metric 3: Portfolio Projects */}
+        <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono uppercase text-gray-400">Showcase</span>
             <div className="p-2 rounded-lg bg-brand-deepNavy text-brand-cyan">
               <ImageIcon className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-3xl font-bold font-mono text-white">{projects.length}</p>
-            <p className="text-xs text-gray-400 mt-1">{publishedProjects} published with Before/After</p>
+            <p className="text-2xl font-bold font-mono text-white">{projects.length}</p>
+            <p className="text-xs text-gray-400 mt-1">{publishedProjects} with Before/After</p>
           </div>
           <Link
             href="/admin/portfolio"
@@ -128,16 +153,16 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
 
-        {/* Metric 3: Contact Enquiries */}
-        <div className="p-6 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
+        {/* Metric 4: Contact Enquiries */}
+        <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-gray-400">Customer Enquiries</span>
+            <span className="text-xs font-mono uppercase text-gray-400">Enquiries</span>
             <div className="p-2 rounded-lg bg-brand-deepNavy text-brand-cyan">
               <Mail className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-3xl font-bold font-mono text-white">{enquiries.length}</p>
+            <p className="text-2xl font-bold font-mono text-white">{enquiries.length}</p>
             <p className="text-xs text-brand-cyan mt-1 font-semibold">{newEnquiries} awaiting review</p>
           </div>
           <Link
@@ -149,21 +174,21 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
 
-        {/* Metric 4: Internal Inventory */}
-        <div className="p-6 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-4">
+        {/* Metric 5: Internal Inventory */}
+        <div className="p-5 rounded-2xl bg-brand-navy border border-brand-steelBlue/40 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-gray-400">Inventory Items</span>
+            <span className="text-xs font-mono uppercase text-gray-400">Inventory</span>
             <div className="p-2 rounded-lg bg-brand-deepNavy text-brand-cyan">
               <Boxes className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-3xl font-bold font-mono text-white">{inventory.length}</p>
+            <p className="text-2xl font-bold font-mono text-white">{inventory.length}</p>
             <p className="text-xs text-gray-400 mt-1">
               {lowStockItems.length > 0 ? (
-                <span className="text-brand-amber font-semibold">{lowStockItems.length} low stock warnings</span>
+                <span className="text-brand-amber font-semibold">{lowStockItems.length} low stock</span>
               ) : (
-                <span className="text-emerald-400">Stock levels healthy</span>
+                <span className="text-emerald-400">Healthy stock</span>
               )}
             </p>
           </div>

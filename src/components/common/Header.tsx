@@ -52,6 +52,7 @@ export function Header({ lang }: HeaderProps) {
     { href: `/${lang}`, label: dict.nav.home },
     { href: `/${lang}/about`, label: dict.nav.about },
     { href: `/${lang}/services`, label: dict.nav.services, hasDropdown: true },
+    { href: `/${lang}/products`, label: dict.nav.products },
     { href: `/${lang}/our-work`, label: dict.nav.portfolio },
     { href: `/${lang}/contact`, label: dict.nav.contact },
   ];

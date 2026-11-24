@@ -121,6 +121,12 @@ export function Footer({ lang, googleReviewUrl }: FooterProps) {
                 </Link>
               </li>
               <li>
+                <Link href={`/${lang}/products`} className="hover:text-brand-cyan transition-colors flex items-center justify-between">
+                  <span>{dict.nav.products}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan font-mono">{isRtl ? 'جديد' : 'NEW'}</span>
+                </Link>
+              </li>
+              <li>
                 <Link href={`/${lang}/our-work`} className="hover:text-brand-cyan transition-colors">
                   {dict.nav.portfolio}
                 </Link>

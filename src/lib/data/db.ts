@@ -1,11 +1,12 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { normalizeGoogleDriveUrl } from '@/lib/utils';
-import { INITIAL_SERVICES, INITIAL_PROJECTS, INITIAL_TESTIMONIALS, INITIAL_INVENTORY, INITIAL_CATEGORIES } from '@/lib/data/mock-data';
+import { INITIAL_SERVICES, INITIAL_PROJECTS, INITIAL_TESTIMONIALS, INITIAL_PRODUCTS, INITIAL_INVENTORY, INITIAL_CATEGORIES } from '@/lib/data/mock-data';
 import {
   ServiceItem,
   PortfolioProject,
   TestimonialItem,
+  ProductItem,
   InventoryItem,
   InventoryCategory,
   InventoryTransaction,
@@ -26,6 +27,7 @@ async function getDbClient() {
 let memoryServices: ServiceItem[] = [...INITIAL_SERVICES];
 let memoryProjects: PortfolioProject[] = [...INITIAL_PROJECTS];
 let memoryTestimonials: TestimonialItem[] = [...INITIAL_TESTIMONIALS];
+let memoryProducts: ProductItem[] = [...INITIAL_PRODUCTS];
 let memoryInventory: InventoryItem[] = [...INITIAL_INVENTORY];
 let memoryCategories: InventoryCategory[] = [...INITIAL_CATEGORIES];
 let memoryTransactions: InventoryTransaction[] = [];
@@ -477,6 +479,192 @@ export async function deleteTestimonialItem(id: string): Promise<boolean> {
     return true;
   }
   return false;
+}
+
+// ==========================================
+// PRODUCTS REPOSITORY
+// ==========================================
+const formatProduct = (p: ProductItem): ProductItem => ({
+  ...p,
+  image_url: normalizeGoogleDriveUrl(p.image_url),
+});
+
+export async function getProducts(): Promise<ProductItem[]> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_published', true)
+        .order('display_order', { ascending: true });
+      if (!error && data && data.length > 0) return (data as ProductItem[]).map(formatProduct);
+    } catch (e) {
+      // Fallback to memory store
+    }
+  }
+  return memoryProducts
+    .filter(p => p.is_published)
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(formatProduct);
+}
+
+export async function getAllProductsAdmin(): Promise<ProductItem[]> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (!error && data && data.length > 0) return (data as ProductItem[]).map(formatProduct);
+    } catch (e) {
+      // Fallback to memory store
+    }
+  }
+  return memoryProducts
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(formatProduct);
+}
+
+export async function getProductBySlug(slug: string): Promise<ProductItem | null> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .or(`slug_en.eq.${slug},slug_ar.eq.${slug},id.eq.${slug}`)
+        .maybeSingle();
+      if (!error && data) return formatProduct(data as ProductItem);
+    } catch (e) {
+      // Fallback to memory store
+    }
+  }
+  const found = memoryProducts.find(p => p.slug_en === slug || p.slug_ar === slug || p.id === slug);
+  return found ? formatProduct(found) : null;
+}
+
+export async function createProductItem(product: Omit<ProductItem, 'id' | 'created_at' | 'updated_at'>): Promise<ProductItem> {
+  const supabase = await getDbClient();
+  const now = new Date().toISOString();
+  const slugBase = (product.slug_en || product.name_en || 'product')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  const newId = 'prod-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+
+  const cleaned: ProductItem = {
+    ...product,
+    id: newId,
+    image_url: normalizeGoogleDriveUrl(product.image_url),
+    slug_en: product.slug_en || slugBase,
+    slug_ar: product.slug_ar || slugBase,
+    display_order: Number(product.display_order) || 1,
+    is_published: product.is_published ?? true,
+    is_featured: product.is_featured ?? false,
+    created_at: now,
+    updated_at: now,
+  };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert(cleaned)
+        .select()
+        .single();
+      if (!error && data) {
+        memoryProducts.push(formatProduct(data as ProductItem));
+        return formatProduct(data as ProductItem);
+      }
+      if (error) console.error('Supabase createProductItem error:', error.message);
+    } catch (e) {
+      console.error('Supabase exception creating product:', e);
+    }
+  }
+
+  memoryProducts.push(cleaned);
+  return cleaned;
+}
+
+export async function updateProductItem(id: string, updates: Partial<ProductItem>): Promise<ProductItem | null> {
+  const supabase = await getDbClient();
+  const now = new Date().toISOString();
+  const cleanedUpdates: Record<string, unknown> = { ...updates, updated_at: now };
+  delete cleanedUpdates.id;
+  delete cleanedUpdates.created_at;
+
+  if (typeof cleanedUpdates.image_url === 'string') {
+    cleanedUpdates.image_url = normalizeGoogleDriveUrl(cleanedUpdates.image_url);
+  }
+  if (cleanedUpdates.display_order !== undefined) {
+    cleanedUpdates.display_order = Number(cleanedUpdates.display_order) || 0;
+  }
+
+  let updatedInDb = false;
+  let dbResult: ProductItem | null = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .update(cleanedUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        updatedInDb = true;
+        dbResult = data as ProductItem;
+      } else if (error) {
+        console.error('Supabase updateProductItem error:', error.message);
+      }
+    } catch (e) {
+      console.error('Supabase exception updating product:', e);
+    }
+  }
+
+  const index = memoryProducts.findIndex(p => p.id === id);
+  if (index !== -1) {
+    memoryProducts[index] = {
+      ...memoryProducts[index],
+      ...cleanedUpdates,
+      ...(dbResult || {}),
+      updated_at: now,
+    };
+    return formatProduct(memoryProducts[index]);
+  }
+
+  if (updatedInDb && dbResult) {
+    memoryProducts.push(dbResult);
+    return formatProduct(dbResult);
+  }
+
+  return null;
+}
+
+export async function deleteProductItem(id: string): Promise<boolean> {
+  const supabase = await getDbClient();
+  let deletedInDb = false;
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+      if (!error) deletedInDb = true;
+      else console.error('Supabase deleteProductItem error:', error.message);
+    } catch (e) {
+      console.error('Supabase exception deleting product:', e);
+    }
+  }
+
+  const index = memoryProducts.findIndex(p => p.id === id);
+  if (index !== -1) {
+    memoryProducts.splice(index, 1);
+    return true;
+  }
+  return deletedInDb;
 }
 
 // ==========================================

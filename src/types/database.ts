@@ -89,6 +89,27 @@ export interface TestimonialItem {
   created_at: string;
 }
 
+export interface ProductItem {
+  id: string;
+  slug_en: string;
+  slug_ar: string;
+  name_en: string;
+  name_ar: string;
+  brand_en: string;
+  brand_ar: string;
+  price_en: string;
+  price_ar: string;
+  description_en: string;
+  description_ar: string;
+  image_url: string;
+  category?: string | null;
+  display_order: number;
+  is_published: boolean;
+  is_featured?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface InventoryCategory {
   id: string;
   name_en: string;
