@@ -489,3 +489,27 @@
   5. **Navigation & Dashboard Integration:**
      * Added `Money Tracker` navigation entry with `Wallet` icon into `AdminPortalShell.tsx` for `owner` and `manager` roles.
      * Added live Cash Flow summary card in main workshop admin telemetry dashboard (`src/app/admin/(portal)/page.tsx`).
+
+
+---
+
+### [Stage 23] — Pagani Huayra Hero Banner & Expandable Floating Social Contact Menu
+* **Timestamp:** 2026-11-25T01:22:00+05:30
+* **Status:** Complete
+* **Implementation Details:**
+  1. **Pagani Huayra Hypercar Hero Image Ingestion:**
+     * Ingested user-provided silver Pagani Huayra cutout (`media_1795549716740_066332c1.png`).
+     * Trimmed transparent whitespace and generated high-performance WebP (`public/images/speederspider-hero-car.webp`, 1014x449, 189 KB) with 95% quality and effort 6, alongside lossless PNG fallback.
+     * Backed up previous hero car asset to `public/images/speederspider-hero-car-backup.webp`.
+     * Preserved cinematic DRIVEX multi-plane scroll/mouse parallax, floor contact shadow, and cyan underglow.
+  2. **Expandable Multi-Channel Floating Action Menu (`src/components/common/WhatsAppButton.tsx`):**
+     * Converted the static single-channel WhatsApp floating button into an interactive luxury Speed-Dial contact widget.
+     * **Floating Trigger Button:** Features official tri-channel indicator badges (WhatsApp green, Instagram gradient, Facebook blue) and "Connect" pill with ambient gradient glow. Transforms into an `X` with rotate transition when opened.
+     * **Expandable Speed-Dial Popup:** Pops up directly above the trigger button with glassmorphism backing (`bg-brand-deepNavy/95 border border-brand-cyan/40 backdrop-blur-xl`):
+       1. **WhatsApp Direct:** (+971 56 569 4440) with prefilled bilingual booking inquiry.
+       2. **Instagram:** Direct link to `https://www.instagram.com/speederspiderae/` (@speederspiderae).
+       3. **Facebook:** Direct link to `https://www.facebook.com/profile.php?id=61596871021810`.
+     * **Interaction Dismissal:** Automatically closes on clicks outside, touch outside, Escape key press, or page scroll.
+     * Full bidirectional support: Anchored at bottom-right for English (LTR) and bottom-left for Arabic (RTL).
+  3. **Sitewide Social Links Synchronization:**
+     * Updated official Instagram URL to `https://www.instagram.com/speederspiderae/` and Facebook URL to `https://www.facebook.com/profile.php?id=61596871021810` in `Footer.tsx` and Organization JSON-LD schema in `src/app/[lang]/page.tsx`.

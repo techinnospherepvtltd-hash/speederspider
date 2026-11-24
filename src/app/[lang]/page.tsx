@@ -72,8 +72,8 @@ export default async function HomePage({ params }: HomePageProps) {
       addressCountry: 'AE',
     },
     sameAs: [
-      'https://www.facebook.com/share/1EFvDZmQN6/',
-      'https://www.instagram.com/speeder_spider?evlk=MWw5YnQ5YmdqYWowbg==',
+      'https://www.facebook.com/profile.php?id=61596871021810',
+      'https://www.instagram.com/speederspiderae/',
     ],
   };
 

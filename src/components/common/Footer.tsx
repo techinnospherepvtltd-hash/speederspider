@@ -58,17 +58,17 @@ export function Footer({ lang, googleReviewUrl }: FooterProps) {
             {/* Social Media Links & Calling with Authentic Logos */}
             <div className="flex items-center gap-2.5 pt-3">
               <a
-                href="https://www.instagram.com/speeder_spider?evlk=MWw5YnQ5YmdqYWowbg=="
+                href="https://www.instagram.com/speederspiderae/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-white hover:border-[#E1306C] hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] shadow-md transition-all hover:scale-105 active:scale-95"
-                title="SpeederSpider Instagram (@speeder_spider)"
+                title="SpeederSpider Instagram (@speederspiderae)"
                 aria-label="SpeederSpider Instagram"
               >
                 <InstagramIcon className="w-5 h-5 fill-current" />
               </a>
               <a
-                href="https://www.facebook.com/share/1EFvDZmQN6/"
+                href="https://www.facebook.com/profile.php?id=61596871021810"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-navy border border-brand-steelBlue/40 text-gray-300 hover:text-white hover:border-[#1877F2] hover:bg-[#1877F2] shadow-md transition-all hover:scale-105 active:scale-95"

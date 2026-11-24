@@ -124,8 +124,8 @@ export function CinematicHero({ lang, dict }: CinematicHeroProps) {
               src="/images/speederspider-hero-car.webp"
               alt={
                 isRtl
-                  ? 'سيارة رياضية فائقة الأداء تجسد دقة وحرفية سبيدر سبايدر في دبي'
-                  : 'Ultra modern supercar showcasing SpeederSpider automotive craftsmanship in Dubai'
+                  ? 'سيارة باجاني هوايرا فائقة الأداء تجسد دقة وحرفية سبيدر سبايدر في دبي'
+                  : 'Pagani Huayra hypercar showcasing SpeederSpider luxury automotive craftsmanship in Dubai'
               }
               fetchPriority="high"
             />
