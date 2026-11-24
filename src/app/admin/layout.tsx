@@ -17,7 +17,10 @@ import {
   LogOut,
   ExternalLink,
   Menu,
-  X
+  X,
+  Loader2,
+  ShieldCheck,
+  Clock,
 } from 'lucide-react';
 import { UserRole } from '@/types';
 
@@ -30,27 +33,55 @@ export default function AdminLayout({
   const router = useRouter();
   const [role, setRole] = useState<UserRole>('owner');
   const [email, setEmail] = useState('owner@speederspider.com');
+  const [fullName, setFullName] = useState('SpeederSpider Owner');
+  const [sessionLoading, setSessionLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    // Avoid running on login page
-    if (pathname === '/admin/login') return;
+    // Avoid running session verification on the login page itself
+    if (pathname === '/admin/login') {
+      setSessionLoading(false);
+      return;
+    }
 
-    const storedRole = (localStorage.getItem('admin_role') as UserRole) || 'owner';
-    const storedEmail = localStorage.getItem('admin_email') || `${storedRole}@speederspider.com`;
-    setRole(storedRole);
-    setEmail(storedEmail);
-  }, [pathname]);
+    async function verifyAdminSession() {
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' });
+        const data = await res.json();
+
+        if (!data.authenticated) {
+          router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`);
+          return;
+        }
+
+        setRole(data.user.role);
+        setEmail(data.user.email);
+        setFullName(data.user.fullName || data.user.email);
+      } catch (err) {
+        console.error('Session check error in admin layout:', err);
+      } finally {
+        setSessionLoading(false);
+      }
+    }
+
+    verifyAdminSession();
+  }, [pathname, router]);
 
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_role');
-    localStorage.removeItem('admin_email');
-    document.cookie = 'admin_role=; path=/; max-age=0';
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Ignore network errors during sign out
+    } finally {
+      router.replace('/admin/login');
+      router.refresh();
+    }
   };
 
   const navItems = [
@@ -64,6 +95,17 @@ export default function AdminLayout({
     { href: '/admin/enquiries', label: 'Contact Enquiries', icon: Mail, roles: ['owner', 'manager', 'staff'] },
     { href: '/admin/audit-logs', label: 'Security & Audit', icon: ShieldAlert, roles: ['owner'] },
   ];
+
+  if (sessionLoading) {
+    return (
+      <div className="min-h-screen bg-brand-deepNavy flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-brand-cyan animate-spin" />
+          <p className="text-xs font-mono text-gray-400">Verifying Workshop Security Session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-deepNavy flex flex-col md:flex-row text-gray-200">
@@ -93,8 +135,9 @@ export default function AdminLayout({
 
       {/* Sidebar Navigation */}
       <aside
-        className={`${mobileOpen ? 'block' : 'hidden'
-          } md:block w-full md:w-64 bg-brand-navy border-r border-brand-steelBlue/30 flex flex-col justify-between p-6 shrink-0 z-30`}
+        className={`${
+          mobileOpen ? 'block' : 'hidden'
+        } md:block w-full md:w-64 bg-brand-navy border-r border-brand-steelBlue/30 flex flex-col justify-between p-6 shrink-0 z-30`}
       >
         <div className="space-y-6">
           {/* Brand & Portal Header */}
@@ -117,14 +160,21 @@ export default function AdminLayout({
           </div>
 
           {/* Active Profile Info */}
-          <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/40 rounded-xl space-y-1">
+          <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/40 rounded-xl space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-mono text-gray-400">Current Role</span>
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[10px] uppercase font-mono text-emerald-400 font-bold">Active Session</span>
+              </div>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40">
                 {role}
               </span>
             </div>
-            <p className="text-xs font-mono text-gray-300 truncate">{email}</p>
+            <p className="text-xs font-semibold text-white truncate">{fullName}</p>
+            <p className="text-[11px] font-mono text-gray-400 truncate">{email}</p>
           </div>
 
           {/* Navigation Links */}
@@ -153,10 +203,11 @@ export default function AdminLayout({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-medium transition-colors ${isActive
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-medium transition-colors ${
+                    isActive
                       ? 'bg-brand-cyan text-brand-deepNavy font-bold shadow-[0_0_15px_rgba(91,192,222,0.3)]'
                       : 'text-gray-300 hover:bg-brand-steelBlue/30 hover:text-brand-cyan'
-                    }`}
+                  }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
@@ -179,10 +230,20 @@ export default function AdminLayout({
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 w-full px-3 py-2 text-xs font-mono text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
+            disabled={loggingOut}
+            className="flex items-center gap-2 w-full px-3 py-2 text-xs font-mono text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
+            {loggingOut ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Signing Out...</span>
+              </>
+            ) : (
+              <>
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </>
+            )}
           </button>
         </div>
       </aside>

@@ -1,18 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { UserRole } from '@/types';
+import { Shield, Lock, Mail, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('owner@speederspider.com');
   const [password, setPassword] = useState('Speeder@1234');
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if session is already active
+  useEffect(() => {
+    async function checkExistingSession() {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data.authenticated) {
+          const redirect = new URLSearchParams(window.location.search).get('redirect') || '/admin';
+          router.replace(redirect);
+          return;
+        }
+      } catch {
+        // Continue to login
+      } finally {
+        setCheckingSession(false);
+      }
+    }
+    checkExistingSession();
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,38 +39,38 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      if (supabase) {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
 
-        if (signInError) {
-          setError(signInError.message || 'Invalid email or password. Please verify credentials.');
-          setLoading(false);
-          return;
-        }
+      const data = await res.json();
 
-        const role = (data.user?.user_metadata?.role as UserRole) || 'owner';
-
-        document.cookie = `admin_role=${role}; path=/; max-age=86400`;
-        localStorage.setItem('admin_role', role);
-        localStorage.setItem('admin_email', data.user?.email || email);
-
-        router.push('/admin');
-      } else {
-        // Local preview fallback
-        document.cookie = `admin_role=owner; path=/; max-age=86400`;
-        localStorage.setItem('admin_role', 'owner');
-        localStorage.setItem('admin_email', email);
-        router.push('/admin');
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Authentication failed. Please verify credentials.');
       }
+
+      // Read redirect destination from query parameters
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || '/admin';
+      router.push(redirect);
+      router.refresh();
     } catch (err: any) {
       setError(err?.message || 'Authentication error occurred.');
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-brand-deepNavy flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-brand-cyan animate-spin" />
+          <p className="text-xs font-mono text-gray-400">Verifying Workshop Security Session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-deepNavy flex items-center justify-center p-4">
@@ -117,19 +136,26 @@ export default function AdminLoginPage() {
           <div className="p-3 bg-brand-deepNavy/80 border border-brand-steelBlue/30 rounded-lg text-[11px] text-gray-300 space-y-1">
             <div className="flex items-center gap-1.5 font-semibold text-brand-cyan font-mono uppercase">
               <CheckCircle2 className="w-3.5 h-3.5 text-brand-cyan" />
-              <span>Full Owner Authorization</span>
+              <span>Cryptographic Session Guard</span>
             </div>
             <p className="text-gray-400">
-              Credentials are authenticated live via Supabase Auth with full OWNER authority across all workshop modules.
+              Signs an HTTP-only SameSite session cookie with 24-hour validity and 4-hour sliding idle protection.
             </p>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 py-3 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)] disabled:opacity-50"
+            className="w-full mt-4 py-3 text-xs font-bold uppercase tracking-wider text-brand-deepNavy bg-brand-cyan hover:bg-brand-cyan/90 rounded-lg transition-all shadow-[0_0_20px_rgba(91,192,222,0.4)] disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? 'Authenticating with Supabase...' : 'Sign In as Owner'}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Verifying & Issuing Session...</span>
+              </>
+            ) : (
+              <span>Sign In to Admin Portal</span>
+            )}
           </button>
         </form>
       </div>

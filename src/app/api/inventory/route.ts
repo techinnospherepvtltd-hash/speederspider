@@ -7,6 +7,7 @@ import {
   deleteInventoryItem,
   getInventoryTransactions,
 } from '@/lib/data/db';
+import { verifyAdminRouteAccess } from '@/lib/auth/session';
 import { z } from 'zod';
 
 const itemSchema = z.object({
@@ -23,8 +24,11 @@ const itemSchema = z.object({
   status: z.enum(['active', 'discontinued', 'archived']).default('active'),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager', 'staff']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const items = await getInventoryItems();
     const categories = await getInventoryCategories();
     const transactions = await getInventoryTransactions();
@@ -37,6 +41,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const body = await req.json();
     const parsed = itemSchema.safeParse(body);
     if (!parsed.success) {
@@ -56,6 +63,9 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const body = await req.json();
     const { id, ...updates } = body;
     if (!id) {
@@ -76,6 +86,9 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) {

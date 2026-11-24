@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { executeStockChange } from '@/lib/data/db';
+import { executeStockChange, createAuditLog } from '@/lib/data/db';
+import { verifyAdminRouteAccess } from '@/lib/auth/session';
 import { z } from 'zod';
 
 const transactionSchema = z.object({
@@ -12,6 +13,9 @@ const transactionSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager', 'staff']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const body = await req.json();
     const parsed = transactionSchema.safeParse(body);
     if (!parsed.success) {

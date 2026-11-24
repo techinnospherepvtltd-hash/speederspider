@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { saveContactMessage, getEnquiries, updateEnquiryStatus } from '@/lib/data/db';
+import { verifyAdminRouteAccess } from '@/lib/auth/session';
 
 const contactSchema = z.object({
   customerName: z.string().min(2, 'Name is required').max(150),
@@ -113,8 +114,11 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager', 'staff']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const enquiries = await getEnquiries();
     return NextResponse.json({ success: true, enquiries });
   } catch (err: any) {
@@ -128,6 +132,9 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner', 'manager', 'staff']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const body = await req.json();
     const { id, status, internalNotes } = body;
 

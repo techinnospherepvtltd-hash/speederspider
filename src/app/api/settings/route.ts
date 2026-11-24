@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGoogleReviewSettings, updateGoogleReviewSettings } from '@/lib/data/db';
+import { verifyAdminRouteAccess } from '@/lib/auth/session';
 
 export async function GET() {
   try {
@@ -13,6 +14,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRouteAccess(req, ['owner']);
+    if (!authCheck.authorized) return authCheck.response;
+
     const body = await req.json();
     if (body.googleReviews) {
       await updateGoogleReviewSettings(body.googleReviews);

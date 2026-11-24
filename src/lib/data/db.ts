@@ -13,6 +13,7 @@ import {
   ContactMessage,
   EnquiryStatus,
   SiteSetting,
+  AuditLog,
 } from '@/types';
 
 // Helper to obtain authorized database client for mutations & admin queries
@@ -31,6 +32,7 @@ let memoryProducts: ProductItem[] = [...INITIAL_PRODUCTS];
 let memoryInventory: InventoryItem[] = [...INITIAL_INVENTORY];
 let memoryCategories: InventoryCategory[] = [...INITIAL_CATEGORIES];
 let memoryTransactions: InventoryTransaction[] = [];
+let memoryAuditLogs: AuditLog[] = [];
 let memoryEnquiries: ContactMessage[] = [
   {
     id: 'enq-1',
@@ -1289,4 +1291,62 @@ export async function updateGoogleReviewSettings(settings: { url: string; is_ena
     return !error;
   }
   return true;
+}
+
+// ==========================================
+// SECURITY & AUDIT LOGS REPOSITORY
+// ==========================================
+export async function createAuditLog(log: Omit<AuditLog, 'id' | 'created_at'>): Promise<AuditLog> {
+  const supabase = await getDbClient();
+  const newLog: AuditLog = {
+    ...log,
+    id: 'log-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6),
+    created_at: new Date().toISOString(),
+  };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .insert({
+          user_id: log.user_id || null,
+          action: log.action,
+          entity_type: log.entity_type,
+          entity_id: log.entity_id || null,
+          details: log.details || null,
+          ip_address: log.ip_address || null,
+        })
+        .select()
+        .single();
+      if (!error && data) {
+        memoryAuditLogs.unshift(data as AuditLog);
+        return data as AuditLog;
+      }
+    } catch (e) {
+      // Fallback to memory
+    }
+  }
+
+  memoryAuditLogs.unshift(newLog);
+  return newLog;
+}
+
+export async function getAuditLogs(limit = 100): Promise<AuditLog[]> {
+  const supabase = await getDbClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (!error && data && data.length > 0) {
+        return data as AuditLog[];
+      }
+    } catch (e) {
+      // Fallback to memory
+    }
+  }
+
+  return memoryAuditLogs.slice(0, limit);
 }
