@@ -63,13 +63,13 @@ export function Header({ lang }: HeaderProps) {
         <div className="flex items-center justify-between h-20">
           {/* Brand Logo */}
           <Link href={`/${lang}`} className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-brand-navy border border-brand-cyan/40 p-1 group-hover:border-brand-cyan group-hover:shadow-[0_0_15px_rgba(91,192,222,0.4)] transition-all overflow-hidden shrink-0">
+            <div className="relative flex items-center justify-center w-11 h-11 shrink-0">
               <Image
                 src="/images/speederspider-crest-car.webp"
                 alt="SpeederSpider Brand Crest"
                 width={44}
                 height={44}
-                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                 priority
               />
             </div>
