@@ -68,13 +68,13 @@ export function AdminPortalShell({ session, children }: AdminPortalShellProps) {
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-brand-navy border-b border-brand-steelBlue/40">
         <div className="flex items-center gap-2.5">
-          <div className="relative w-8 h-8 shrink-0">
+          <div className="relative h-8 w-auto shrink-0">
             <Image
-              src="/images/speederspider-crest-car.webp"
+              src="/images/speederspider-logo-nav.webp"
               alt="SpeederSpider"
-              width={32}
+              width={47}
               height={32}
-              className="w-full h-full object-contain"
+              className="h-8 w-auto object-contain"
             />
           </div>
           <span className="font-display font-bold uppercase tracking-wider text-white">
@@ -99,13 +99,13 @@ export function AdminPortalShell({ session, children }: AdminPortalShellProps) {
         <div className="space-y-6">
           {/* Brand & Portal Header */}
           <div className="hidden md:flex items-center gap-3 pb-4 border-b border-brand-steelBlue/30">
-            <div className="relative flex items-center justify-center w-10 h-10 shrink-0">
+            <div className="relative flex items-center justify-center h-10 w-auto shrink-0">
               <Image
-                src="/images/speederspider-crest-car.webp"
+                src="/images/speederspider-logo-nav.webp"
                 alt="SpeederSpider Admin"
-                width={40}
+                width={59}
                 height={40}
-                className="w-full h-full object-contain"
+                className="h-10 w-auto object-contain"
               />
             </div>
             <div>

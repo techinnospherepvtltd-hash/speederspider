@@ -62,22 +62,22 @@ export function Header({ lang }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Brand Logo */}
-          <Link href={`/${lang}`} className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-11 h-11 shrink-0">
+          <Link href={`/${lang}`} className="flex items-center gap-2.5 sm:gap-3 group">
+            <div className="relative flex items-center justify-center h-12 sm:h-14 w-auto shrink-0">
               <Image
-                src="/images/speederspider-crest-car.webp"
-                alt="SpeederSpider Brand Crest"
-                width={44}
-                height={44}
-                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                src="/images/speederspider-logo-nav.webp"
+                alt="SpeederSpider Dubai Logo"
+                width={82}
+                height={56}
+                className="h-12 sm:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                 priority
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-widest text-white uppercase font-display leading-tight group-hover:text-brand-cyan transition-colors">
+              <span className="text-lg sm:text-xl font-bold tracking-widest text-white uppercase font-display leading-tight group-hover:text-brand-cyan transition-colors">
                 SPEEDER<span className="text-brand-cyan">SPIDER</span>
               </span>
-              <span className="text-[10px] tracking-wider uppercase text-gray-400 font-mono">
+              <span className="text-[9px] sm:text-[10px] tracking-wider uppercase text-gray-400 font-mono">
                 {isRtl ? 'دبي • تعديل وصيانة السيارات' : 'DUBAI • AUTOMOTIVE ATELIER'}
               </span>
             </div>
